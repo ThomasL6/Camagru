@@ -19,7 +19,7 @@ RUN docker-php-ext-install mysqli pdo pdo_mysql \
     && docker-php-ext-install zip \
     && docker-php-ext-install mbstring
 
-# Activer SSL
+# Activer SSL et rewrite
 RUN a2enmod ssl rewrite
 
 # Générer certificat auto-signé
@@ -29,21 +29,21 @@ RUN mkdir /etc/apache2/ssl && \
     -out /etc/apache2/ssl/apache-selfsigned.crt \
     -subj "/C=FR/ST=IDF/L=Paris/O=42/OU=Camagru/CN=localhost"
 
-# Configurer Apache uniquement en SSL
+# Configurer Apache pour servir public/ et SSL
 RUN echo '<IfModule mod_ssl.c>\n\
-    <VirtualHost *:443>\n\
-        ServerAdmin admin@localhost\n\
-        DocumentRoot /var/www/html\n\
-        SSLEngine on\n\
-        SSLCertificateFile /etc/apache2/ssl/apache-selfsigned.crt\n\
-        SSLCertificateKeyFile /etc/apache2/ssl/apache-selfsigned.key\n\
-        <Directory /var/www/html>\n\
-            Options Indexes FollowSymLinks\n\
-            AllowOverride All\n\
-            Require all granted\n\
-        </Directory>\n\
+<VirtualHost *:443>\n\
+    ServerAdmin admin@localhost\n\
+    DocumentRoot /var/www/html/public\n\
+    SSLEngine on\n\
+    SSLCertificateFile /etc/apache2/ssl/apache-selfsigned.crt\n\
+    SSLCertificateKeyFile /etc/apache2/ssl/apache-selfsigned.key\n\
+    <Directory /var/www/html/public>\n\
+        Options Indexes FollowSymLinks\n\
+        AllowOverride All\n\
+        Require all granted\n\
+    </Directory>\n\
     </VirtualHost>\n\
-</IfModule>' > /etc/apache2/sites-available/ssl-only.conf \
+    </IfModule>' > /etc/apache2/sites-available/ssl-only.conf \
     && a2ensite ssl-only \
     && a2dissite 000-default
 

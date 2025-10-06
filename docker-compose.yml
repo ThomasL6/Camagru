@@ -7,7 +7,7 @@ services:
     ports:
       - "8443:443"
     volumes:
-      - ./docker/src:/var/www/html/
+      - ./src:/var/www/html
     depends_on:
       - db
 
