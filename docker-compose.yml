@@ -5,24 +5,37 @@ services:
     build: ./docker/php-apache
     container_name: camagru_web
     ports:
-      - "8443:443"
+      - "${WEB_PORT}:443"
     volumes:
       - ./src:/var/www/html
     depends_on:
       - db
-
+  adminer:
+    image: adminer
+    networks:
+      - DB
+    restart: unless-stopped
+    ports:
+      - 8080:8080
   db:
     image: mysql:5.7
     container_name: camagru_db
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: camagru
-      MYSQL_USER: camagru_user
-      MYSQL_PASSWORD: userpassword8080
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
       - "3306:3306"
+    networks:
+      - DB
+    restart: unless-stopped
     volumes:
       - db_data:/var/lib/mysql
 
 volumes:
   db_data:
+
+networks:
+  DB:
+    driver: bridge
