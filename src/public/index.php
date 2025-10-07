@@ -51,7 +51,7 @@
 
         // Bouton connexion
         $submitDiv = new Elem('div', ['class' => 'form-group']);
-        $submit = new Elem('button', ['type' => 'submit', 'class' => 'btn']);
+        $submit = new Elem('button', ['type' => 'submit', 'class' => 'btn', 'href'=> 'menu.php']);
         $submit->addChild('Se connecter');
         $submitDiv->addChild($submit);
         $form->addChild($submitDiv);

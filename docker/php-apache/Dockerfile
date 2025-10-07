@@ -1,8 +1,7 @@
 FROM php:8.2-apache
 
-# Dépendances
 RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg-dev libfreetype6-dev libzip-dev zip libonig-dev openssl \
+    libpng-dev libjpeg-dev libfreetype6-dev libzip-dev zip libonig-dev openssl ssmtp \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Extensions PHP
@@ -20,6 +19,14 @@ RUN mkdir /etc/apache2/ssl && \
     -out /etc/apache2/ssl/apache-selfsigned.crt \
     -subj "/C=FR/ST=IDF/L=Paris/O=42/OU=Camagru/CN=localhost"
 
+# Copier les scripts de configuration
+COPY configure-ssmtp.sh /usr/local/bin/
+COPY start.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/configure-ssmtp.sh /usr/local/bin/start.sh
+
+# Configuration PHP pour utiliser ssmtp
+RUN echo "sendmail_path = /usr/sbin/ssmtp -t" > /usr/local/etc/php/conf.d/mail.ini
+
 # Copier la configuration Apache personnalisée
 COPY ssl-only.conf /etc/apache2/sites-available/ssl-only.conf
 RUN a2ensite ssl-only && a2dissite 000-default
@@ -29,4 +36,4 @@ RUN chown -R www-data:www-data /var/www/html/ \
     && chmod -R 755 /var/www/html/
 
 EXPOSE 443
-CMD ["apache2-foreground"]
+CMD ["/usr/local/bin/start.sh"]

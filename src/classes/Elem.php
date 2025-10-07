@@ -1,33 +1,48 @@
 <?php
-
 class Elem {
-    public $tag;
-    public $attributes = [];
-    public $children = [];
+    private $tag;
+    private $attributes;
+    private $children;
+    private $selfClosing;
 
     public function __construct($tag, $attributes = []) {
         $this->tag = $tag;
         $this->attributes = $attributes;
+        $this->children = [];
+        $this->selfClosing = in_array($tag, ['img', 'input', 'br', 'hr', 'meta', 'link']);
     }
 
     public function addChild($child) {
-        $this->children[] = $child;
+        if (is_string($child) || (is_object($child) && method_exists($child, 'render'))) {
+            $this->children[] = $child;
+        }
+        return $this;
     }
 
     public function render() {
-        $html = "<{$this->tag}";
+        $html = '<' . $this->tag;
+        
         foreach ($this->attributes as $key => $value) {
-            $html .= " $key=\"$value\"";
+            $html .= ' ' . $key . '="' . htmlspecialchars($value) . '"';
         }
-        $html .= ">";
-        foreach ($this->children as $child) {
-            if (is_string($child)) {
-                $html .= $child;
-            } else {
-                $html .= $child->render();
+        
+        if ($this->selfClosing) {
+            $html .= ' />';
+        } else {
+            $html .= '>';
+            
+            foreach ($this->children as $child) {
+                if (is_string($child)) {
+                    $html .= $child;
+                } else {
+                    $html .= $child->render();
+                }
             }
+            
+            $html .= '</' . $this->tag . '>';
         }
-        $html .= "</{$this->tag}>";
+        
         return $html;
     }
 }
+?>
