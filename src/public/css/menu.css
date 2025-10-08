@@ -1,0 +1,96 @@
+/* ================== MENU - PAGE D'ACCUEIL ================== */
+
+/* Section de bienvenue */
+.welcome-section {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-radius: 10px;
+}
+
+.welcome-text {
+    font-size: 1.2rem;
+    color: #6c757d;
+    margin-top: 1rem;
+}
+
+/* Actions rapides */
+.quick-actions h3 {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #333;
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.action-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+    text-decoration: none;
+    color: inherit;
+}
+
+.card-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.action-card h4 {
+    margin-bottom: 1rem;
+    color: #007BFF;
+}
+
+.action-card p {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Activité récente */
+.recent-activity {
+    margin-top: 3rem;
+}
+
+.recent-activity h3 {
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.activity-placeholder {
+    text-align: center;
+    padding: 3rem;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    color: #6c757d;
+}
+
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+    .action-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .welcome-section {
+        padding: 1.5rem;
+    }
+    
+    .welcome-text {
+        font-size: 1rem;
+    }
+}

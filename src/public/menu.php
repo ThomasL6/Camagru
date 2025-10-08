@@ -1,45 +1,52 @@
 <?php
-session_start();
+require_once __DIR__ . '/../includes/auth_check.php';
 
-// Vérifier si l'utilisateur est connecté
-if (!isset($_SESSION['user_id'])) {
-    header('Location: index.php');
-    exit;
-}
-
-// Gestion de la déconnexion
-if (isset($_GET['logout'])) {
-    session_destroy();
-    header('Location: index.php');
-    exit;
-}
-
-$username = $_SESSION['username'] ?? 'Utilisateur';
+$page_title = "Menu - Camagru";
+$page_css = "menu";
+include __DIR__ . '/../includes/header.php';
 ?>
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu - Camagru</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div class="container">
-        <h1>Bienvenue sur Camagru</h1>
-        <div class="user-info">
-            <p>Connecté en tant que : <strong><?php echo htmlspecialchars($username); ?></strong></p>
+
+<div class="container">
+    <section class="welcome-section">
+        <h2>Bienvenue sur Camagru ! 🎉</h2>
+        <p class="welcome-text">Créez, partagez et découvrez des moments uniques avec notre communauté.</p>
+    </section>
+    
+    <section class="quick-actions">
+        <h3>Actions rapides</h3>
+        <div class="action-grid">
+            <a href="camera.php" class="action-card">
+                <div class="card-icon">📸</div>
+                <h4>Prendre une photo</h4>
+                <p>Capturez un moment et ajoutez des effets créatifs</p>
+            </a>
+            
+            <a href="gallery.php" class="action-card">
+                <div class="card-icon">🖼️</div>
+                <h4>Ma galerie</h4>
+                <p>Parcourez vos créations et celles de la communauté</p>
+            </a>
+            
+            <a href="profile.php" class="action-card">
+                <div class="card-icon">👤</div>
+                <h4>Mon profil</h4>
+                <p>Gérez vos informations et préférences</p>
+            </a>
+            
+            <a href="#" class="action-card">
+                <div class="card-icon">🎨</div>
+                <h4>Créations populaires</h4>
+                <p>Découvrez les tendances du moment</p>
+            </a>
         </div>
-        
-        <div class="menu-section">
-            <h2>Menu Principal</h2>
-            <ul class="menu-list">
-                <li><a href="#" class="btn">📸 Prendre une photo</a></li>
-                <li><a href="#" class="btn">🖼️ Ma galerie</a></li>
-                <li><a href="#" class="btn">👤 Mon profil</a></li>
-                <li><a href="?logout=1" class="btn logout-btn">🚪 Se déconnecter</a></li>
-            </ul>
+    </section>
+    
+    <section class="recent-activity">
+        <h3>Activité récente</h3>
+        <div class="activity-placeholder">
+            <p>🚀 Bientôt disponible : Vos dernières activités apparaîtront ici !</p>
         </div>
-    </div>
-</body>
-</html>
+    </section>
+</div>
+
+<?php include __DIR__ . '/../includes/footer.php'; ?>
