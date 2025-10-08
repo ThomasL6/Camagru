@@ -12,12 +12,17 @@ RUN docker-php-ext-install mysqli pdo pdo_mysql \
 # Activer SSL et rewrite
 RUN a2enmod ssl rewrite headers
 
-# Certificat auto-signé
-RUN mkdir /etc/apache2/ssl && \
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+# Générer un certificat SSL unique à chaque build avec timestamp complet
+RUN mkdir -p /etc/apache2/ssl && \
+    BUILD_TIME=$(date +%Y%m%d%H%M%S) && \
+    RANDOM_ID=$(openssl rand -hex 6) && \
+    SERIAL="${BUILD_TIME}${RANDOM_ID}" && \
+    CN="camagru-${RANDOM_ID}-${BUILD_TIME}.localhost" && \
+    echo "Generating SSL cert with CN=${CN} Serial=${SERIAL}" && \
+    openssl req -x509 -nodes -days 1 -newkey rsa:2048 \
     -keyout /etc/apache2/ssl/apache-selfsigned.key \
     -out /etc/apache2/ssl/apache-selfsigned.crt \
-    -subj "/C=FR/ST=IDF/L=Paris/O=42/OU=Camagru/CN=localhost"
+    -subj "/C=FR/ST=Paris/L=Paris/O=Camagru-${BUILD_TIME}/OU=Dev-${RANDOM_ID}/CN=${CN}"
 
 # Copier les scripts de configuration
 COPY configure-ssmtp.sh /usr/local/bin/
