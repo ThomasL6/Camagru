@@ -1,3 +1,59 @@
+<?php
+require_once __DIR__ . '/../classes/Elem.php';
+require_once __DIR__ . '/../classes/Database.php';
+
+session_start();
+
+$errors = [];
+$success = '';
+
+// Traitement de la connexion
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    // Validation basique
+    if (empty($email)) {
+        $errors[] = "L'email est requis";
+    }
+    if (empty($password)) {
+        $errors[] = "Le mot de passe est requis";
+    }
+
+    // Vérification en base de données
+    if (empty($errors)) {
+        try {
+            $pdo = getDatabase();
+            
+            // Chercher l'utilisateur par email
+            $stmt = $pdo->prepare("SELECT id, username, email, password, is_verified FROM users WHERE email = ?");
+            $stmt->execute([$email]);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($user && password_verify($password, $user['password'])) {
+                // Vérifier si le compte est activé
+                if ($user['is_verified'] == 1) {
+                    // Connexion réussie
+                    $_SESSION['user_id'] = $user['id'];
+                    $_SESSION['username'] = $user['username'];
+                    $_SESSION['email'] = $user['email'];
+                    
+                    // Redirection vers le menu principal
+                    header('Location: menu.php');
+                    exit;
+                } else {
+                    $errors[] = "Votre compte n'est pas encore activé. Vérifiez vos emails.";
+                }
+            } else {
+                $errors[] = "Email ou mot de passe incorrect";
+            }
+        } catch (PDOException $e) {
+            $errors[] = "Erreur de base de données : " . $e->getMessage();
+        }
+    }
+}
+
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,12 +65,23 @@
 <body>
     <div class="container">
         <h1>Camagru</h1>
+        
         <?php
-        require_once __DIR__ . '/../classes/Elem.php';
+        // Affichage des erreurs
+        if (!empty($errors)) {
+            echo '<div class="error-messages">';
+            foreach ($errors as $error) {
+                echo '<p>' . htmlspecialchars($error) . '</p>';
+            }
+            echo '</div>';
+        }
+        if (!empty($success)) {
+            echo '<div class="success-message"><p>' . htmlspecialchars($success) . '</p></div>';
+        }
 
         // Formulaire principal
         $form = new Elem('form', [
-            'action' => '#',
+            'action' => '',
             'method' => 'post',
             'class' => 'login-form'
         ]);
@@ -51,7 +118,7 @@
 
         // Bouton connexion
         $submitDiv = new Elem('div', ['class' => 'form-group']);
-        $submit = new Elem('button', ['type' => 'submit', 'class' => 'btn', 'href'=> 'menu.php']);
+        $submit = new Elem('button', ['type' => 'submit', 'class' => 'btn']);
         $submit->addChild('Se connecter');
         $submitDiv->addChild($submit);
         $form->addChild($submitDiv);

@@ -17,12 +17,19 @@ all:
 stop:
 	$(DOCKER_COMPOSE_CMD) -p $(NAME) -f $(DOCKER_COMPOSE_PATH) stop
 
-#  Supprimer les conteneurs + volumes
+#  Supprimer les conteneurs (GARDE les volumes/données)
 down:
-	$(DOCKER_COMPOSE_CMD) -p $(NAME) -f $(DOCKER_COMPOSE_PATH) down -v
+	$(DOCKER_COMPOSE_CMD) -p $(NAME) -f $(DOCKER_COMPOSE_PATH) down
 
-#  Rebuild complet
-re: down all
+#  Supprimer conteneurs + volumes (EFFACE toutes les données)
+clean: 
+	$(DOCKER_COMPOSE_CMD) -p $(NAME) -f $(DOCKER_COMPOSE_PATH) down -v
+	@echo "Data cleaned. Volumes removed."
+
+#  Rebuild complet (force nouveau certificat)
+re: down
+	$(DOCKER_COMPOSE_CMD) --env-file .env -p $(NAME) -f $(DOCKER_COMPOSE_PATH) build --no-cache web
+	$(DOCKER_COMPOSE_CMD) --env-file .env -p $(NAME) -f $(DOCKER_COMPOSE_PATH) up -d
 
 #  Nettoyer base MySQL (vide le volume)
 clean-db:
@@ -46,4 +53,4 @@ check-https:
 	@echo "🔍 Vérification HTTPS..."
 	@curl -vk https://localhost:8443 || echo "❌ HTTPS ne répond pas"
 
-.PHONY: all stop down restart clean-db logs bash mysql check-https
+.PHONY: all stop down clean restart clean-db logs bash mysql check-https

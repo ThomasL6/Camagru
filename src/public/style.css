@@ -53,3 +53,69 @@ label {
 .link:hover {
     text-decoration: underline;
 }
+
+/* Messages d'erreur et de succès */
+.error-messages {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 10px;
+    border: 1px solid #f1aeb5;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+.success-message {
+    background-color: #d1edff;
+    color: #0c5460;
+    padding: 10px;
+    border: 1px solid #b8daff;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+/* Styles pour le menu */
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.user-info {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.menu-section h2 {
+    color: #333;
+    border-bottom: 2px solid #007BFF;
+    padding-bottom: 10px;
+}
+
+.menu-list {
+    list-style: none;
+    padding: 0;
+}
+
+.menu-list li {
+    margin-bottom: 10px;
+}
+
+.menu-list .btn {
+    display: block;
+    width: 100%;
+    text-align: left;
+    text-decoration: none;
+    padding: 15px;
+    font-size: 16px;
+}
+
+.logout-btn {
+    background-color: #dc3545 !important;
+}
+
+.logout-btn:hover {
+    background-color: #c82333 !important;
+}
