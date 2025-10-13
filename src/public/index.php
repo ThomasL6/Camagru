@@ -9,12 +9,12 @@ $success = '';
 
 // Traitement de la connexion
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
+    $login = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
     // Validation basique
-    if (empty($email)) {
-        $errors[] = "L'email est requis";
+    if (empty($login)) {
+        $errors[] = "Le nom d'utilisateur ou l'email est requis";
     }
     if (empty($password)) {
         $errors[] = "Le mot de passe est requis";
@@ -24,10 +24,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (empty($errors)) {
         try {
             $pdo = getDatabase();
-            
-            // Chercher l'utilisateur par email
-            $stmt = $pdo->prepare("SELECT id, username, email, password, is_verified FROM users WHERE email = ?");
-            $stmt->execute([$email]);
+
+            // Chercher l'utilisateur par nom d'utilisateur OU par email
+            $stmt = $pdo->prepare("SELECT id, username, email, password, is_verified FROM users WHERE username = ? OR email = ?");
+            $stmt->execute([$login, $login]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($user && password_verify($password, $user['password'])) {
@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $errors[] = "Votre compte n'est pas encore activé. Vérifiez vos emails.";
                 }
             } else {
-                $errors[] = "Email ou mot de passe incorrect";
+                $errors[] = "Nom d'utilisateur/email ou mot de passe incorrect";
             }
         } catch (PDOException $e) {
             $errors[] = "Erreur de base de données : " . $e->getMessage();
@@ -86,20 +86,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'class' => 'login-form'
         ]);
 
-        // Champ Email
-        $emailDiv = new Elem('div', ['class' => 'form-group']);
-        $emailLabel = new Elem('label');
-        $emailLabel->addChild('Email: ');
-        $emailInput = new Elem('input', [
-            'type' => 'email',
-            'name' => 'email',
+        // Champ Nom d'utilisateur ou Email
+        $usernameDiv = new Elem('div', ['class' => 'form-group']);
+        $usernameLabel = new Elem('label');
+        $usernameLabel->addChild('Nom d\'utilisateur ou Email: ');
+        $usernameInput = new Elem('input', [
+            'type' => 'text',
+            'name' => 'username',
             'required' => 'required',
-            'placeholder' => 'Votre email',
+            'placeholder' => 'Votre nom d\'utilisateur ou email',
             'class' => 'input-field'
         ]);
-        $emailDiv->addChild($emailLabel);
-        $emailDiv->addChild($emailInput);
-        $form->addChild($emailDiv);
+        $usernameDiv->addChild($usernameLabel);
+        $usernameDiv->addChild($usernameInput);
+        $form->addChild($usernameDiv);
 
         // Champ Mot de passe
         $pwdDiv = new Elem('div', ['class' => 'form-group']);

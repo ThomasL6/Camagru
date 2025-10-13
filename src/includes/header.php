@@ -33,7 +33,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                     <li><a href="menu.php" class="<?php echo $current_page == 'menu' ? 'active' : ''; ?>">🏠 Accueil</a></li>
                     <li><a href="gallery.php" class="<?php echo $current_page == 'gallery' ? 'active' : ''; ?>">🖼️ Galerie</a></li>
                     <li><a href="camera.php" class="<?php echo $current_page == 'camera' ? 'active' : ''; ?>">📸 Caméra</a></li>
-                    <li><a href="profile.php" class="<?php echo $current_page == 'profile' ? 'active' : ''; ?>">👤 Profil</a></li>
+                    <li><a href="profile.php" class="<?php echo $current_page == 'profile' ? 'active' : ''; ?>">💽 Profil</a></li>
                 </ul>
             </nav>
             
