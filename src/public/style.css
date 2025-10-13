@@ -1,6 +1,19 @@
-body {
+/* Reset de base pour éliminer les marges/padding par défaut */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
     font-family: Arial, sans-serif;
     background-color: #ffffff;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
 }
 
 .login-form {
@@ -75,9 +88,10 @@ label {
 
 /* Styles pour le menu */
 .container {
-    max-width: 600px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
+    width: 100%;
 }
 
 .user-info {
