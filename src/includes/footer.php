@@ -9,7 +9,7 @@
             
             <div class="footer-section">
                 <h4>Navigation</h4>
-                <ul>
+                <ul class="nav-grid">
                     <li><a href="menu.php">Accueil</a></li>
                     <li><a href="gallery.php">Galerie</a></li>
                     <li><a href="camera.php">Caméra</a></li>
