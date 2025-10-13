@@ -28,7 +28,7 @@ include __DIR__ . '/../includes/header.php';
             </a>
             
             <a href="profile.php" class="action-card">
-                <div class="card-icon">👤</div>
+                <div class="card-icon">💽</div>
                 <h4>Mon profil</h4>
                 <p>Gérez vos informations et préférences</p>
             </a>

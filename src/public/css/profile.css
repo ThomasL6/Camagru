@@ -89,6 +89,20 @@
     border-color: #007BFF;
 }
 
+.profile-form .input-field[readonly] {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.field-note {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+    font-style: italic;
+}
+
 .profile-form .btn {
     background-color: #007BFF;
     color: white;
