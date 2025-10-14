@@ -7,59 +7,59 @@ session_start();
 $errors = [];
 $success = '';
 
-// Traitement de la connexion
+// Handle login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $login = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    // Validation basique
+    // Basic validation
     if (empty($login)) {
-        $errors[] = "Le nom d'utilisateur ou l'email est requis";
+        $errors[] = "Username or email is required";
     }
     if (empty($password)) {
-        $errors[] = "Le mot de passe est requis";
+        $errors[] = "Password is required";
     }
 
-    // Vérification en base de données
+    // Database verification
     if (empty($errors)) {
         try {
             $pdo = getDatabase();
 
-            // Chercher l'utilisateur par nom d'utilisateur OU par email
+            // Search user by username OR email
             $stmt = $pdo->prepare("SELECT id, username, email, password, is_verified FROM users WHERE username = ? OR email = ?");
             $stmt->execute([$login, $login]);
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($user && password_verify($password, $user['password'])) {
-                // Vérifier si le compte est activé
+                // Check if account is verified
                 if ($user['is_verified'] == 1) {
-                    // Connexion réussie
+                    // Successful login
                     $_SESSION['user_id'] = $user['id'];
                     $_SESSION['username'] = $user['username'];
                     $_SESSION['email'] = $user['email'];
                     
-                    // Redirection vers le menu principal
+                    // Redirect to main menu
                     header('Location: menu.php');
                     exit;
                 } else {
-                    $errors[] = "Votre compte n'est pas encore activé. Vérifiez vos emails.";
+                    $errors[] = "Your account is not yet activated. Please check your emails.";
                 }
             } else {
-                $errors[] = "Nom d'utilisateur/email ou mot de passe incorrect";
+                $errors[] = "Incorrect username/email or password";
             }
         } catch (PDOException $e) {
-            $errors[] = "Erreur de base de données : " . $e->getMessage();
+            $errors[] = "Database error: " . $e->getMessage();
         }
     }
 }
 
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion - Camagru</title>
+    <title>Login - Camagru</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -86,47 +86,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'class' => 'login-form'
         ]);
 
-        // Champ Nom d'utilisateur ou Email
+        // Username or Email field
         $usernameDiv = new Elem('div', ['class' => 'form-group']);
         $usernameLabel = new Elem('label');
-        $usernameLabel->addChild('Nom d\'utilisateur ou Email: ');
+        $usernameLabel->addChild('Username or Email: ');
         $usernameInput = new Elem('input', [
             'type' => 'text',
             'name' => 'username',
             'required' => 'required',
-            'placeholder' => 'Votre nom d\'utilisateur ou email',
+            'placeholder' => 'Your username or email',
             'class' => 'input-field'
         ]);
         $usernameDiv->addChild($usernameLabel);
         $usernameDiv->addChild($usernameInput);
         $form->addChild($usernameDiv);
 
-        // Champ Mot de passe
+        // Password field
         $pwdDiv = new Elem('div', ['class' => 'form-group']);
         $pwdLabel = new Elem('label');
-        $pwdLabel->addChild('Mot de passe: ');
+        $pwdLabel->addChild('Password: ');
         $pwdInput = new Elem('input', [
             'type' => 'password',
             'name' => 'password',
             'required' => 'required',
-            'placeholder' => 'Votre mot de passe',
+            'placeholder' => 'Your password',
             'class' => 'input-field'
         ]);
         $pwdDiv->addChild($pwdLabel);
         $pwdDiv->addChild($pwdInput);
         $form->addChild($pwdDiv);
 
-        // Bouton connexion
+        // Login button
         $submitDiv = new Elem('div', ['class' => 'form-group']);
         $submit = new Elem('button', ['type' => 'submit', 'class' => 'btn']);
-        $submit->addChild('Se connecter');
+        $submit->addChild('Login');
         $submitDiv->addChild($submit);
         $form->addChild($submitDiv);
 
-        // Lien créer un compte
+        // Create account link
         $createDiv = new Elem('div', ['class' => 'form-group']);
         $create = new Elem('a', ['href' => 'inscription.php', 'class' => 'link']);
-        $create->addChild('Créer un compte');
+        $create->addChild('Create an account');
         $createDiv->addChild($create);
         $form->addChild($createDiv);
 

@@ -8,43 +8,43 @@ include __DIR__ . '/../includes/header.php';
 
 <div class="container">
     <section class="welcome-section">
-        <h2>Bienvenue sur Camagru ! 🎉</h2>
-        <p class="welcome-text">Créez, partagez et découvrez des moments uniques avec notre communauté.</p>
+        <h2>Welcome to Camagru! 🎉</h2>
+        <p class="welcome-text">Create, share and discover unique moments with our community.</p>
     </section>
     
     <section class="quick-actions">
-        <h3>Actions rapides</h3>
+        <h3>Quick Actions</h3>
         <div class="action-grid">
             <a href="camera.php" class="action-card">
                 <div class="card-icon">📸</div>
-                <h4>Prendre une photo</h4>
-                <p>Capturez un moment et ajoutez des effets créatifs</p>
+                <h4>Take a Photo</h4>
+                <p>Capture a moment and add creative effects</p>
             </a>
             
             <a href="gallery.php" class="action-card">
                 <div class="card-icon">🖼️</div>
-                <h4>Ma galerie</h4>
-                <p>Parcourez vos créations et celles de la communauté</p>
+                <h4>My Gallery</h4>
+                <p>Browse your creations and those of the community</p>
             </a>
             
             <a href="profile.php" class="action-card">
                 <div class="card-icon">💽</div>
-                <h4>Mon profil</h4>
-                <p>Gérez vos informations et préférences</p>
+                <h4>My Profile</h4>
+                <p>Manage your information and preferences</p>
             </a>
             
             <a href="#" class="action-card">
                 <div class="card-icon">🎨</div>
-                <h4>Créations populaires</h4>
-                <p>Découvrez les tendances du moment</p>
+                <h4>Popular Creations</h4>
+                <p>Discover trending content</p>
             </a>
         </div>
     </section>
     
     <section class="recent-activity">
-        <h3>Activité récente</h3>
+        <h3>Recent Activity</h3>
         <div class="activity-placeholder">
-            <p>🚀 Bientôt disponible : Vos dernières activités apparaîtront ici !</p>
+            <p>🚀 Coming soon: Your latest activities will appear here!</p>
         </div>
     </section>
 </div>
