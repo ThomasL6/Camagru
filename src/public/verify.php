@@ -10,51 +10,51 @@ if (isset($_GET['token']) && !empty($_GET['token'])) {
     try {
         $pdo = getDatabase();
         
-        // Chercher l'utilisateur avec ce token
+        // Find user with this token
         $stmt = $pdo->prepare("SELECT id, username FROM users WHERE verification_token = ? AND is_verified = 0");
         $stmt->execute([$token]);
         $user = $stmt->fetch();
         
         if ($user) {
-            // Activer le compte
+            // Activate account
             $stmt = $pdo->prepare("UPDATE users SET is_verified = 1, verification_token = NULL WHERE id = ?");
             if ($stmt->execute([$user['id']])) {
-                $message = "Félicitations " . htmlspecialchars($user['username']) . " ! Votre compte a été activé avec succès.";
+                $message = "Congratulations " . htmlspecialchars($user['username']) . "! Your account has been successfully activated.";
                 $success = true;
             } else {
-                $message = "Erreur lors de l'activation du compte.";
+                $message = "Error activating account.";
             }
         } else {
-            $message = "Token de vérification invalide ou compte déjà activé.";
+            $message = "Invalid verification token or account already activated.";
         }
     } catch (PDOException $e) {
-        $message = "Erreur de base de données : " . $e->getMessage();
+        $message = "Database error: " . $e->getMessage();
     }
 } else {
-    $message = "Token de vérification manquant.";
+    $message = "Missing verification token.";
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vérification du compte - Camagru</title>
+    <title>Account Verification - Camagru</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Vérification du compte</h1>
+        <h1>Account Verification</h1>
         
         <div class="<?php echo $success ? 'success-message' : 'error-messages'; ?>">
             <p><?php echo htmlspecialchars($message); ?></p>
         </div>
         
         <?php if ($success): ?>
-            <p><a href="menu.php" class="btn">Se connecter</a></p>
+            <p><a href="index.php" class="btn">Login</a></p>
         <?php else: ?>
-            <p><a href="inscription.php" class="btn">Retour à l'inscription</a></p>
+            <p><a href="inscription.php" class="btn">Back to registration</a></p>
         <?php endif; ?>
     </div>
 </body>

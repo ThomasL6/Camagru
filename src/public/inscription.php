@@ -8,7 +8,7 @@ session_start();
 $errors = [];
 $success = '';
 
-// Traitement du formulaire
+// Form processing
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $email = trim($_POST['email'] ?? '');
@@ -17,40 +17,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Validation
     if (empty($username)) {
-        $errors[] = "Le nom d'utilisateur est requis";
+        $errors[] = "Username is required";
     } elseif (strlen($username) < 3) {
-        $errors[] = "Le nom d'utilisateur doit contenir au moins 3 caractères";
+        $errors[] = "Username must contain at least 3 characters";
     }
     
     if (empty($email)) {
-        $errors[] = "L'email est requis";
+        $errors[] = "Email is required";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "Format d'email invalide";
+        $errors[] = "Invalid email format";
     }
     
     if (empty($password)) {
-        $errors[] = "Le mot de passe est requis";
+        $errors[] = "Password is required";
     } elseif (strlen($password) < 8) {
-        $errors[] = "Le mot de passe doit contenir au moins 8 caractères";
+        $errors[] = "Password must contain at least 8 characters";
     }
     
     if ($password !== $confirm_password) {
-        $errors[] = "Les mots de passe ne correspondent pas";
+        $errors[] = "Passwords do not match";
     }
     
-    // Vérifier si l'utilisateur existe déjà ET créer l'utilisateur
+    // Check if user already exists AND create user
     if (empty($errors)) {
         try {
             $pdo = getDatabase(); // ✅ $pdo accessible pour tout ce qui suit
             
-            // Vérifier si l'utilisateur existe déjà
+            // Check if user already exists
             $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
             $stmt->execute([$username, $email]);
             
             if ($stmt->fetch()) {
-                $errors[] = "Nom d'utilisateur ou email déjà utilisé";
+                $errors[] = "Username or email already in use";
             } else {
-                // Créer l'utilisateur si il n'existe pas
+                // Create user if it doesn't exist
                 $hashed_password = password_hash($password, PASSWORD_DEFAULT);
                 $verification_token = bin2hex(random_bytes(32));
                 
@@ -60,32 +60,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ");
                 
                 if ($stmt->execute([$username, $email, $hashed_password, $verification_token])) {
-                    // Envoyer l'email de vérification
+                    // Send verification email
                     if (sendVerificationEmail($email, $username, $verification_token)) {
-                        $success = "Compte créé avec succès ! Vérifiez votre email pour activer votre compte.";
+                        $success = "Account created successfully! Check your email to activate your account.";
                     } else {
-                        $errors[] = "Erreur lors de l'envoi de l'email de vérification";
+                        $errors[] = "Error sending verification email";
                     }
                 }
             }
         } catch (PDOException $e) {
-            $errors[] = "Erreur de base de données: " . $e->getMessage();
+            $errors[] = "Database error: " . $e->getMessage();
         }
     }
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - Camagru</title>
+    <title>Registration - Camagru</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Créer un compte</h1>
+        <h1>Create an Account</h1>
         
         <?php
         // Afficher les erreurs
@@ -116,10 +116,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'class' => 'login-form'
             ]);
 
-            // Champ Username
+            // Username field
             $userDiv = new Elem('div', ['class' => 'form-group']);
             $userLabel = new Elem('label', ['for' => 'username']);
-            $userLabel->addChild('Nom d\'utilisateur: ');
+            $userLabel->addChild('Username: ');
             $userInput = new Elem('input', [
                 'type' => 'text',
                 'id' => 'username',
@@ -132,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $userDiv->addChild($userInput);
             $form->addChild($userDiv);
 
-            // Champ Email
+            // Email field
             $emailDiv = new Elem('div', ['class' => 'form-group']);
             $emailLabel = new Elem('label', ['for' => 'email']);
             $emailLabel->addChild('Email: ');
@@ -148,10 +148,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $emailDiv->addChild($emailInput);
             $form->addChild($emailDiv);
 
-            // Champ Password
+            // Password field
             $passDiv = new Elem('div', ['class' => 'form-group']);
             $passLabel = new Elem('label', ['for' => 'password']);
-            $passLabel->addChild('Mot de passe: ');
+            $passLabel->addChild('Password: ');
             $passInput = new Elem('input', [
                 'type' => 'password',
                 'id' => 'password',
@@ -163,10 +163,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $passDiv->addChild($passInput);
             $form->addChild($passDiv);
 
-            // Champ Confirm Password
+            // Confirm Password field
             $confirmDiv = new Elem('div', ['class' => 'form-group']);
             $confirmLabel = new Elem('label', ['for' => 'confirm_password']);
-            $confirmLabel->addChild('Confirmer le mot de passe: ');
+            $confirmLabel->addChild('Confirm Password: ');
             $confirmInput = new Elem('input', [
                 'type' => 'password',
                 'id' => 'confirm_password',
@@ -178,12 +178,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $confirmDiv->addChild($confirmInput);
             $form->addChild($confirmDiv);
 
-            // Bouton Submit
+            // Submit button
             $submitBtn = new Elem('button', [
                 'type' => 'submit',
                 'class' => 'submit-btn'
             ]);
-            $submitBtn->addChild('S\'inscrire');
+            $submitBtn->addChild('Register');
             $form->addChild($submitBtn);
 
             echo $form->render();

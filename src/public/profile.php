@@ -2,73 +2,73 @@
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../classes/Database.php';
 
-$page_title = "Mon Profil - Camagru";
+$page_title = "My Profile - Camagru";
 $page_css = "profile";
 $user_id = $_SESSION['user_id'];
 $success = '';
 $errors = [];
 
-// Récupérer les infos utilisateur
+// Get user information
 try {
     $pdo = getDatabase();
     $stmt = $pdo->prepare("SELECT username, email, created_at FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    $errors[] = "Erreur lors du chargement du profil : " . $e->getMessage();
+    $errors[] = "Error loading profile: " . $e->getMessage();
 }
 
-// Traitement du formulaire de modification
+// Handle profile update form
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $new_username = trim($_POST['username'] ?? '');
     $new_email = trim($_POST['email'] ?? '');
     $new_password = trim($_POST['password'] ?? '');
     
-    // Validation des champs
+    // Field validation
     if (empty($new_username)) {
-        $errors[] = "Le nom d'utilisateur est requis";
+        $errors[] = "Username is required";
     } elseif (strlen($new_username) < 3) {
-        $errors[] = "Le nom d'utilisateur doit contenir au moins 3 caractères";
+        $errors[] = "Username must contain at least 3 characters";
     }
     
     if (empty($new_email)) {
-        $errors[] = "L'adresse email est requise";
+        $errors[] = "Email address is required";
     } elseif (!filter_var($new_email, FILTER_VALIDATE_EMAIL)) {
-        $errors[] = "L'adresse email n'est pas valide";
+        $errors[] = "Email address is not valid";
     }
     
-    // Validation du mot de passe (optionnel)
+    // Password validation (optional)
     if (!empty($new_password) && strlen($new_password) < 6) {
-        $errors[] = "Le mot de passe doit contenir au moins 6 caractères";
+        $errors[] = "Password must contain at least 6 characters";
     }
     
     if (empty($errors)) {
         try {
-            // Vérifier si le nom d'utilisateur existe déjà
+            // Check if username already exists
             $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
             $stmt->execute([$new_username, $user_id]);
             
             if ($stmt->fetch()) {
-                $errors[] = "Ce nom d'utilisateur est déjà utilisé";
+                $errors[] = "This username is already taken";
             }
             
-            // Vérifier si l'email existe déjà
+            // Check if email already exists
             $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
             $stmt->execute([$new_email, $user_id]);
             
             if ($stmt->fetch()) {
-                $errors[] = "Cette adresse email est déjà utilisée";
+                $errors[] = "This email address is already in use";
             }
             
             if (empty($errors)) {
-                // Préparer la requête de mise à jour
+                // Prepare update query
                 if (!empty($new_password)) {
-                    // Mettre à jour avec le nouveau mot de passe
+                    // Update with new password
                     $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
                     $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?");
                     $result = $stmt->execute([$new_username, $new_email, $hashed_password, $user_id]);
                 } else {
-                    // Mettre à jour sans changer le mot de passe
+                    // Update without changing password
                     $stmt = $pdo->prepare("UPDATE users SET username = ?, email = ? WHERE id = ?");
                     $result = $stmt->execute([$new_username, $new_email, $user_id]);
                 }
@@ -77,13 +77,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['username'] = $new_username;
                     $user['username'] = $new_username;
                     $user['email'] = $new_email;
-                    $success = "Profil mis à jour avec succès !";
+                    $success = "Profile updated successfully!";
                 } else {
-                    $errors[] = "Erreur lors de la mise à jour";
+                    $errors[] = "Error during update";
                 }
             }
         } catch (PDOException $e) {
-            $errors[] = "Erreur de base de données : " . $e->getMessage();
+            $errors[] = "Database error: " . $e->getMessage();
         }
     }
 }
@@ -93,8 +93,8 @@ include __DIR__ . '/../includes/header.php';
 
 <div class="container">
     <section class="profile-header">
-        <h2>💽 Mon Profil</h2>
-        <p>Gérez vos informations personnelles</p>
+        <h2>💽 My Profile</h2>
+        <p>Manage your personal information</p>
     </section>
     
     <?php if (!empty($errors)): ?>
@@ -113,18 +113,18 @@ include __DIR__ . '/../includes/header.php';
     
     <div class="profile-grid">
         <section class="profile-info">
-            <h3>Informations du compte</h3>
+            <h3>Account Information</h3>
             <div class="info-card">
-                <p><strong>Email :</strong> <?php echo htmlspecialchars($user['email'] ?? 'Non défini'); ?></p>
-                <p><strong>Membre depuis :</strong> <?php echo isset($user['created_at']) ? date('d/m/Y', strtotime($user['created_at'])) : 'Date inconnue'; ?></p>
+                <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email'] ?? 'Not defined'); ?></p>
+                <p><strong>Member since:</strong> <?php echo isset($user['created_at']) ? date('m/d/Y', strtotime($user['created_at'])) : 'Unknown date'; ?></p>
             </div>
         </section>
         
         <section class="profile-edit">
-            <h3>Modifier le profil</h3>
+            <h3>Edit Profile</h3>
             <form method="POST" class="profile-form">
                 <div class="form-group">
-                    <label for="username">Nom d'utilisateur :</label>
+                    <label for="username">Username:</label>
                     <input 
                         type="text" 
                         id="username" 
@@ -137,7 +137,7 @@ include __DIR__ . '/../includes/header.php';
                     >
                 </div>
                 <div class="form-group">
-                    <label for="email">Adresse mail :</label>
+                    <label for="email">Email Address:</label>
                     <input 
                         type="email" 
                         id="email" 
@@ -148,7 +148,7 @@ include __DIR__ . '/../includes/header.php';
                     >
                 </div>
                 <div class="form-group">
-                    <label for="password">Nouveau mot de passe (optionnel) :</label>
+                    <label for="password">New Password (optional):</label>
                     <input 
                         type="password" 
                         id="password" 
@@ -159,21 +159,21 @@ include __DIR__ . '/../includes/header.php';
                 </div>
                 
                 <div class="form-group">
-                    <button type="submit" class="btn">💾 Enregistrer</button>
+                    <button type="submit" class="btn">Save</button>
                 </div>
             </form>
         </section>
         
         <section class="profile-stats">
-            <h3>Statistiques</h3>
+            <h3>Statistics</h3>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number">0</div>
-                    <div class="stat-label">Photos publiées</div>
+                    <div class="stat-label">Photos published</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number">0</div>
-                    <div class="stat-label">J'aime reçus</div>
+                    <div class="stat-label">Likes received</div>
                 </div>
             </div>
         </section>

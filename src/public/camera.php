@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 
-$page_title = "Caméra - Camagru";
+$page_title = "Camera - Camagru";
 $page_css = "camera";
 include __DIR__ . '/../includes/header.php';
 echo '<link rel="stylesheet" href="css/placeholder.css">';
@@ -9,19 +9,32 @@ echo '<link rel="stylesheet" href="css/placeholder.css">';
 
 <div class="container">
     <section class="camera-header">
-        <h2>📸 Studio Photo</h2>
-        <p>Capturez vos moments et ajoutez des effets créatifs</p>
+        <h2>📸 Photo Studio</h2>
+        <p>Capture your moments and add creative effects</p>
     </section>
     
-    <div class="camera-placeholder">
-        <div class="placeholder-content">
-            <div class="placeholder-icon">📷</div>
-            <h3>Fonctionnalité en développement</h3>
-            <p>Le studio photo sera bientôt disponible !</p>
-            <p>Vous pourrez prendre des photos avec votre webcam et ajouter des filtres sympas.</p>
-            <a href="menu.php" class="btn">← Retour au menu</a>
+    <div class="camera-container">
+        <div class="camera-section">
+            <h3>📹 Live Preview</h3>
+            <div class="video-container">
+                <video id="video">Video stream not available.</video>
+            </div>
+            <div class="camera-controls">
+                <button id="start-button" class="btn capture-btn">📸 Take Photo</button>
+            </div>
+        </div>
+        <div class="photo-section">
+            <h3>🖼️ Captured Photo</h3>
+            <div class="photo-container">
+                <img id="photo" alt="The captured image will be displayed here" />
+            </div>
+            <div class="photo-controls">
+                <button id="save-button" class="btn save-btn" disabled>Save Photo</button>
+            </div>            
+            <canvas id="canvas" style="display: none;"></canvas>
         </div>
     </div>
 </div>
 
+<script src="js/camera.js"></script>
 <?php include __DIR__ . '/../includes/footer.php'; ?>
