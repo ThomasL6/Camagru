@@ -29,7 +29,17 @@ echo '<link rel="stylesheet" href="css/placeholder.css">';
                 <img id="photo" alt="The captured image will be displayed here" />
             </div>
             <div class="photo-controls">
-                <button id="save-button" class="btn save-btn" disabled>Save Photo</button>
+                <div class="visibility-options" id="visibility-options" style="display: none;">
+                    <label>
+                        <input type="radio" name="visibility" value="private" checked>
+                        🔒 Private (Only visible to you)
+                    </label>
+                    <label>
+                        <input type="radio" name="visibility" value="public">
+                        🌍 Public (Visible in community feed)
+                    </label>
+                </div>
+                <button id="save-button" class="btn save-btn" disabled>💾 Save Photo</button>
             </div>            
             <canvas id="canvas" style="display: none;"></canvas>
         </div>

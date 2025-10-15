@@ -17,40 +17,48 @@ document.addEventListener("DOMContentLoaded", function () {
 
 		const data = canvas.toDataURL('image/png');
 		photo.setAttribute('src', data);
+		
+		// Hide visibility options and disable save button
+		const visibilityOptions = document.getElementById('visibility-options');
+		const saveButton = document.getElementById('save-button');
+		if (visibilityOptions) visibilityOptions.style.display = 'none';
+		if (saveButton) saveButton.disabled = true;
 	}
 	
     let photoTaken = false; // Add this variable
 
     function takepicture() {
-        const context = canvas.getContext("2d");
+        const context = canvas.getContext('2d');
         if (width && height) {
             canvas.width = width;
             canvas.height = height;
             context.drawImage(video, 0, 0, width, height);
-
-            const data = canvas.toDataURL("image/png");
-            photo.setAttribute("src", data);
+            const data = canvas.toDataURL('image/png');
+            photo.setAttribute('src', data);
             
-            photoTaken = true; // Mark that a photo has been taken
-            
-            if (savebutton) {
-                savebutton.disabled = false;
-            }
+            // Show visibility options and enable save button
+            const visibilityOptions = document.getElementById('visibility-options');
+            const saveButton = document.getElementById('save-button');
+            visibilityOptions.style.display = 'block';
+            saveButton.disabled = false;
         } else {
             clearphoto();
         }
     }
 
     function savePhoto() {
-        if (!photoTaken) {
+        const imageData = photo.src;
+        if (!imageData || imageData === 'data:,') {
             alert('Please take a photo first!');
             return;
         }
 
-        const imageData = photo.src;
+        // Get visibility setting
+        const visibilityRadio = document.querySelector('input[name="visibility"]:checked');
+        const isPublic = visibilityRadio ? visibilityRadio.value === 'public' : false;
         
         savebutton.disabled = true;
-        savebutton.textContent = 'Saving...';
+        savebutton.textContent = '💾 Saving...';
 
         fetch('api/uploadimage.php', {
             method: 'POST',
@@ -58,26 +66,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                image: imageData
+                image: imageData,
+                is_public: isPublic
             })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert('Photo saved successfully!');
+                const visibility = isPublic ? 'public' : 'private';
+                alert(`📸 Photo saved successfully as ${visibility}!`);
                 clearphoto();
-                photoTaken = false; // Reset flag
-                savebutton.disabled = true;
             } else {
-                alert('Error: ' + (data.error || 'Unknown error'));
+                alert('❌ Error: ' + (data.error || 'Unknown error'));
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('Server connection error');
+            alert('🔌 Server connection error');
         })
         .finally(() => {
-            savebutton.textContent = 'Save';
+            savebutton.textContent = '💾 Save Photo';
+            savebutton.disabled = true;
         });
     }
 
@@ -121,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //Capture
     startbutton.addEventListener('click', function (ev){
         takepicture();
+        photoTaken = true; // Set flag when photo is taken
         ev.preventDefault();
     }, false);
 	
