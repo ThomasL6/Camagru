@@ -155,6 +155,71 @@
     background-color: #c82333;
 }
 
+/* Photo Controls Styles */
+.photo-controls {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.save-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.save-btn:hover:not(:disabled) {
+    background: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.save-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.visibility-options {
+    margin-bottom: 15px;
+    padding: 15px;
+    background: rgba(0, 123, 255, 0.1);
+    border: 1px solid rgba(0, 123, 255, 0.2);
+    border-radius: 8px;
+    text-align: left;
+}
+
+.visibility-options label {
+    display: block;
+    margin-bottom: 10px;
+    color: #333;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.2s ease;
+    font-weight: 500;
+}
+
+.visibility-options label:hover {
+    background: rgba(0, 123, 255, 0.1);
+}
+
+.visibility-options label:last-child {
+    margin-bottom: 0;
+}
+
+.visibility-options input[type="radio"] {
+    margin-right: 8px;
+    transform: scale(1.1);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .camera-container {
@@ -174,5 +239,15 @@
     .capture-btn {
         font-size: 1rem;
         padding: 0.8rem;
+    }
+    
+    .visibility-options label {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+    
+    .save-btn {
+        font-size: 14px;
+        padding: 10px 20px;
     }
 }

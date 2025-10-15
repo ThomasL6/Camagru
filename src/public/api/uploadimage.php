@@ -51,9 +51,12 @@ try {
         throw new Exception("Failed to save image file");
     }
 
+    // Get visibility setting (default to private if not specified)
+    $isPublic = isset($input['is_public']) ? (bool)$input['is_public'] : false;
+
     $pdo = getDatabase();
-    $stmt = $pdo->prepare("INSERT INTO images (user_id, image_path, created_at) VALUES (?, ?, NOW())");
-    $stmt->execute([$_SESSION['user_id'], $fileName]);
+    $stmt = $pdo->prepare("INSERT INTO images (user_id, image_path, is_public, created_at) VALUES (?, ?, ?, NOW())");
+    $stmt->execute([$_SESSION['user_id'], $fileName, $isPublic ? 1 : 0]);
 
     echo json_encode([
         'success' => true, 
