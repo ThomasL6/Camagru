@@ -66,17 +66,24 @@ include __DIR__ . '/../includes/header.php';
                     
                     <div class="photo-container">
                         <img src="uploads/images/<?= htmlspecialchars($photo['image_path']) ?>" 
-                             alt="Photo by <?= htmlspecialchars($photo['username']) ?>"
-                             loading="lazy"
-                             onclick="openLightbox(this.src, '<?= htmlspecialchars($photo['username']) ?>')">
+                            alt="Photo by <?= htmlspecialchars($photo['username']) ?>"
+                            loading="lazy"
+                            onclick="openLightbox(this.src, '<?= htmlspecialchars($photo['username']) ?>', <?= $photo['id'] ?>)">
                     </div>
                     
                     <div class="photo-footer">
                         <div class="photo-stats">
-                            <button class="like-btn" onclick="toggleLike(<?= $photo['id'] ?>)" 
-                                    data-photo-id="<?= $photo['id'] ?>">
-                                ❤️ <span class="likes-count"><?= $photo['likes_count'] ?></span>
-                            </button>
+                            <div class="likes-section">
+                                <button class="like-btn" onclick="toggleLike(<?= $photo['id'] ?>, event)" 
+                                        data-photo-id="<?= $photo['id'] ?>">
+                                    ❤️ <span class="likes-count" id="likes-<?= $photo['id'] ?>"><?= $photo['likes_count'] ?></span>
+                                </button>
+                            </div>
+                            <div class="comment-section">
+                                <input type="text" placeholder="Add a comment..." class="comment-input" 
+                                    data-photo-id="<?= $photo['id'] ?>"
+                                    onkeypress="handleCommentSubmit(event, <?= $photo['id'] ?>)">
+                            </div>
                             <span class="time-ago">
                                 <?= timeAgo($photo['created_at']) ?>
                             </span>
@@ -92,7 +99,6 @@ include __DIR__ . '/../includes/header.php';
 <?php include __DIR__ . '/../includes/footer.php'; ?>
 
 <?php
-// Fonction helper pour afficher "il y a X temps"
 function timeAgo($datetime) {
     $time = time() - strtotime($datetime);
     
