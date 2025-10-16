@@ -31,6 +31,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
             <nav class="main-nav">
                 <ul>
                     <li><a href="menu.php" class="<?php echo $current_page == 'menu' ? 'active' : ''; ?>">🏠 Home</a></li>
+                    <li><a href="feed.php" class="<?php echo $current_page == 'feed' ? 'active' : ''; ?>">🎨Feed</a></li>
                     <li><a href="gallery.php" class="<?php echo $current_page == 'gallery' ? 'active' : ''; ?>">🖼️ Gallery</a></li>
                     <li><a href="camera.php" class="<?php echo $current_page == 'camera' ? 'active' : ''; ?>">📸 Camera</a></li>
                     <li><a href="profile.php" class="<?php echo $current_page == 'profile' ? 'active' : ''; ?>">💽 Profile</a></li>

@@ -54,7 +54,7 @@ include __DIR__ . '/../includes/header.php';
             <?php if (!empty($recent_photos)): ?>
                 <?php foreach($recent_photos as $photo): ?>
                     <div class="photo-item">
-                        <a href="view_photo.php?id=<?= $photo['id'] ?>">
+                        <a href="gallery.php?id=<?= $photo['id'] ?>">
                             <img src="../uploads/images/<?= htmlspecialchars($photo['image_path']) ?>" 
                                     alt="Photo du <?= date('d/m/Y', strtotime($photo['created_at'])) ?>"
                                     class="photo-thumbnail"
