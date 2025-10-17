@@ -179,20 +179,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         <span class="photo-author">📸 ${username}</span>
                         <button class="close-lightbox">&times;</button>
                     </div>
-                    <div class="lightbox-interactions">
-                        <button class="lightbox-like-btn" onclick="toggleLightboxLike(${photoId})">
-                            ❤️ <span class="lightbox-likes-count" id="lightbox-likes-${photoId}">0</span>
-                        </button>
-                        <div class="lightbox-comment-form">
-                            <input type="text" class="lightbox-comment-input" placeholder="Ajouter un commentaire..." 
-                                   onkeypress="handleLightboxComment(event, ${photoId})">
-                            <button class="comment-submit-btn" onclick="submitLightboxComment(${photoId})">Envoyer</button>
-                        </div>
-                    </div>
                     <div class="lightbox-comments">
-                        <h4 class="comments-title">Commentaires</h4>
                         <div class="comments-list" id="comments-list-${photoId}">
                             <div class="no-comments">Chargement des commentaires...</div>
+                        </div>
+                    </div>
+                    <div class="lightbox-footer">
+                        <div class="lightbox-comment-form">
+                            <input type="text" class="lightbox-comment-input" placeholder="Ajouter un commentaire..." 
+                                onkeypress="handleLightboxComment(event, ${photoId})">
+                            <button class="lightbox-like-btn" onclick="toggleLightboxLike(${photoId})">
+                                ❤️ <span class="lightbox-likes-count" id="lightbox-likes-${photoId}">0</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -280,18 +278,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         commentsList.innerHTML = comments.map(comment => `
             <div class="comment-item">
-                <div class="comment-author">${escapeHtml(comment.username)}</div>
-                <div class="comment-text">${escapeHtml(comment.comment_text)}</div>
-                <div class="comment-date">${timeAgo(comment.created_at)}</div>
+                <span class="comment-author">${escapeHtml(comment.username)}</span>
+                <p class="comment-text">${escapeHtml(comment.comment_text)}</p>
+                <span class="comment-date">${timeAgo(comment.created_at)}</span>
             </div>
         `).join('');
     }
 
     // Toggle like in lightbox
     window.toggleLightboxLike = function(photoId) {
-        toggleLike(photoId, null); // Réutiliser la fonction existante
+        toggleLike(photoId, null);
         
-        // Mettre à jour le compteur dans la lightbox
         setTimeout(() => {
             const mainLikesSpan = document.getElementById(`likes-${photoId}`);
             const lightboxLikesSpan = document.getElementById(`lightbox-likes-${photoId}`);
@@ -315,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const comment = input.value.trim();
         
         if (!comment) {
-            alert('Veuillez saisir un commentaire');
+            // No alert, just return. User might just want to like.
             return;
         }
         
@@ -337,7 +334,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 input.value = '';
                 window.showTemporaryMessage('Commentaire ajouté !', 'success');
-                // Recharger les commentaires
                 loadLightboxData(photoId);
             } else {
                 alert(data.message || 'Erreur lors de l\'ajout du commentaire');
@@ -367,12 +363,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Time ago function
     function timeAgo(datetime) {
-        const time = Math.floor((new Date() - new Date(datetime)) / 1000);
+        // Assuming datetime is in UTC from the server (e.g., "YYYY-MM-DD HH:MM:SS")
+        const date = new Date(datetime.replace(' ', 'T') + 'Z');
+        const now = new Date();
+        const seconds = Math.floor((now - date) / 1000);
         
-        if (time < 60) return 'à l\'instant';
-        if (time < 3600) return Math.floor(time/60) + 'm';
-        if (time < 86400) return Math.floor(time/3600) + 'h';
-        if (time < 2592000) return Math.floor(time/86400) + 'j';
+        if (seconds < 60) return 'à l\'instant';
+        
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes}m`;
+        
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) return `${hours}h`;
+        
+        const days = Math.floor(hours / 24);
+        if (days < 30) return `${days}j`;
         
         return new Date(datetime).toLocaleDateString('fr-FR');
     }
