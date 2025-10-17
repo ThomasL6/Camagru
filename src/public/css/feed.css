@@ -1,5 +1,6 @@
-/* ================== FEED ================== */
+/* ================== FEED PAGE ================== */
 
+/* Feed sections */
 .feed-header {
     text-align: center;
     margin-bottom: 2rem;
@@ -13,6 +14,20 @@
 .feed-header p {
     color: #6c757d;
     font-size: 1.1rem;
+}
+
+/* Messages d'alerte */
+.alert {
+    padding: 1rem;
+    margin-bottom: 2rem;
+    border-radius: 5px;
+    border: 1px solid;
+}
+
+.alert-error {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
 }
 
 /* Feed Grid - 5 colonnes */
@@ -156,56 +171,84 @@
     margin-bottom: 1rem;
 }
 
-/* Enhanced Lightbox */
+/* Enhanced Lightbox - FORCE VERTICAL LAYOUT */
 .lightbox {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    background: rgba(0, 0, 0, 0.95) !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    z-index: 9999 !important;
     animation: fadeIn 0.3s ease;
 }
 
 .lightbox-content {
-    position: relative;
-    background: white;
-    border-radius: 15px;
-    max-width: 90%;
-    max-height: 90%;
-    overflow: hidden;
-    display: flex;
-    flex-direction: row;
+    position: relative !important;
+    background: white !important;
+    border-radius: 15px !important;
+    max-width: 95vw !important;
+    max-height: 90vh !important;
+    overflow: hidden !important;
+    display: grid !important;
+    grid-template-columns: auto 400px !important; /* Changed from 1fr to auto */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+    width: fit-content !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .lightbox-image {
-    flex: 1;
-    max-width: 60%;
+    grid-column: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #f8f9fa !important;
+    padding: 0.5rem !important; /* Reduced padding */
+    margin: 0 !important;
+    position: relative !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    /* min-height: 500px !important; REMOVED */
 }
 
 .lightbox-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    max-width: calc(95vw - 420px) !important; /* Adjusted max-width */
+    max-height: 90vh !important; /* Adjusted max-height */
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
 }
 
 .lightbox-sidebar {
-    flex: 0 0 400px;
-    display: flex;
-    flex-direction: column;
-    background: white;
+    grid-column: 2 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    background: white !important;
+    border-left: 2px solid #007BFF !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
 }
 
 .lightbox-header {
-    padding: 1.5rem;
+    padding: 1rem !important;
+    background: #f8f9fa !important;
+    z-index: 10 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
     border-bottom: 1px solid #eee;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
 .photo-author {
@@ -215,220 +258,163 @@
 }
 
 .close-lightbox {
-    background: none;
+    background: #ff4757;
     border: none;
-    font-size: 24px;
+    font-size: 20px;
     cursor: pointer;
-    color: #6c757d;
-    width: 30px;
-    height: 30px;
+    color: white;
+    width: 35px;
+    height: 35px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     transition: all 0.3s;
+    font-weight: bold;
 }
 
 .close-lightbox:hover {
-    background: #f8f9fa;
-    color: #333;
-}
-
-.lightbox-interactions {
-    padding: 1.5rem;
-    border-bottom: 1px solid #eee;
-}
-
-.lightbox-like-btn {
-    background: none;
-    border: 2px solid #007BFF;
-    color: #007BFF;
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.lightbox-like-btn:hover {
-    background: #007BFF;
-    color: white;
-}
-
-.lightbox-like-btn.liked {
-    background: #e91e63;
-    border-color: #e91e63;
-    color: white;
-}
-
-.lightbox-comment-form {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.lightbox-comment-input {
-    flex: 1;
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 25px;
-    outline: none;
-    transition: border-color 0.3s;
-}
-
-.lightbox-comment-input:focus {
-    border-color: #007BFF;
-}
-
-.comment-submit-btn {
-    background: #007BFF;
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: 25px;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.comment-submit-btn:hover {
-    background: #0056b3;
+    background: #ff3838;
+    transform: scale(1.1);
 }
 
 .lightbox-comments {
     flex: 1;
     overflow-y: auto;
-    padding: 1.5rem;
+    padding: 1rem;
+    max-height: 10rem; /* Set a fixed max-height for ~2 comments */
 }
 
-.comments-title {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 1rem;
-    color: #333;
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .comment-item {
-    margin-bottom: 1rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #f0f0f0;
-}
-
-.comment-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .comment-author {
-    font-weight: 500;
-    color: #007BFF;
-    font-size: 0.9rem;
-    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: #333;
 }
 
 .comment-text {
-    color: #333;
-    line-height: 1.4;
-    margin-bottom: 0.25rem;
+    margin: 0.25rem 0;
 }
 
 .comment-date {
+    font-size: 0.8rem;
+    color: #888;
+}
+
+.lightbox-footer {
+    padding: 1rem;
+    border-top: 1px solid #eee;
+    background: #f8f9fa;
+}
+
+.lightbox-comment-form {
+    display: flex;
+    align-items: center; /* Vertically align items */
+    gap: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 25px;
+    padding: 0.25rem 0.75rem; /* Add padding to the container */
+}
+
+.lightbox-comment-input {
+    flex: 1;
+    border: none; /* Remove border from input */
+    outline: none;
+    background: transparent; /* Make input background transparent */
+    padding: 0.5rem 0;
+}
+
+.comment-submit-btn {
+   display: none; /* Hide the old submit button */
+}
+
+.lightbox-interactions {
+   display: none; /* Hide the old interactions container */
+}
+
+.lightbox-like-btn {
+    background: none;
+    border: none;
+    color: #007BFF;
+    padding: 0.5rem;
+    cursor: pointer;
+    font-size: 1.2rem; /* Make the heart bigger */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+
+.lightbox-like-btn:hover {
+    transform: scale(1.1);
+}
+
+.lightbox-like-btn .lightbox-likes-count {
+    font-size: 1rem;
+    font-weight: normal;
+    color: #333;
+}
+
+.lightbox-like-btn.liked {
+    color: #e91e63;
+}
+
+/* ... (rest of the CSS) */
+
+
+.lightbox-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid #eee;
+    background: #f8f9fa;
+    position: relative;
+}
+
+.lightbox-meta .photo-author {
+    margin-right: auto;
+    color: #007BFF;
+    font-weight: 500;
+}
+
+.lightbox-meta .photo-date {
     color: #6c757d;
     font-size: 0.8rem;
 }
 
-.no-comments {
-    text-align: center;
-    color: #6c757d;
-    font-style: italic;
-    padding: 2rem;
-}
-
-/* Messages temporaires */
-.temp-message {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 15px 25px;
-    border-radius: 8px;
+.lightbox-meta .close-lightbox {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #ff4757;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
     color: white;
-    font-weight: 500;
-    z-index: 2000;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s;
+    font-weight: bold;
 }
 
-.temp-message-success {
-    background: #28a745;
-}
-
-.temp-message-error {
-    background: #dc3545;
-}
-
-.temp-message-info {
-    background: #007BFF;
-}
-
-/* Responsive Design */
-@media (max-width: 1400px) {
-    .feed-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
-@media (max-width: 1024px) {
-    .feed-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .lightbox-content {
-        flex-direction: column;
-        max-width: 95%;
-        max-height: 95%;
-    }
-    
-    .lightbox-image {
-        max-width: 100%;
-        flex: 0 0 60%;
-    }
-    
-    .lightbox-sidebar {
-        flex: 1;
-    }
-}
-
-@media (max-width: 768px) {
-    .feed-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-    }
-    
-    .feed-card img {
-        height: 150px;
-    }
-    
-    .lightbox-sidebar {
-        flex: 0 0 300px;
-    }
-}
-
-@media (max-width: 480px) {
-    .feed-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .lightbox-content {
-        margin: 1rem;
-        max-width: calc(100% - 2rem);
-        max-height: calc(100% - 2rem);
-    }
-    
-    .lightbox-sidebar {
-        flex: 0 0 250px;
-    }
+.lightbox-meta .close-lightbox:hover {
+    background: #ff3838;
+    transform: scale(1.1);
 }
 
 /* Animations */

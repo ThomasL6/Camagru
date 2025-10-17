@@ -71,7 +71,6 @@ include __DIR__ . '/../includes/header.php';
                                     <?= $photo['is_public'] ? '🌐 Public' : '🔒 Privé' ?>
                                 </span>
                             </div>
-                        </a>
                     </div>
                 <?php endforeach; ?>
                 <div class="view-all-photos">

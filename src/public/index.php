@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['email'] = $user['email'];
                     
                     // Redirect to main menu
-                    header('Location: menu.php');
+                    header('Location: feed.php');
                     exit;
                 } else {
                     $errors[] = "Your account is not yet activated. Please check your emails.";
