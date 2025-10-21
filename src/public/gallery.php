@@ -42,8 +42,6 @@ include __DIR__ . '/../includes/header.php';
         <?php if (empty($photos)): ?>
             <div class="no-photos">
                 <h3>No photos yet</h3>
-                <p>Start by taking your first photo!</p>
-                <a href="camera.php" class="btn btn-primary">📷 Take Photo</a>
             </div>
         <?php else: ?>
             <?php foreach ($photos as $photo): ?>
