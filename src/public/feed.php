@@ -8,7 +8,6 @@ $page_css = "feed";
 try {
     $pdo = Database::getInstance()->getConnection();
     
-    // Récupérer toutes les photos publiques avec le nom d'utilisateur et le nombre de likes
     $stmt = $pdo->prepare("
         SELECT 
             i.id, 
@@ -51,7 +50,6 @@ include __DIR__ . '/../includes/header.php';
         <?php if (empty($photos)): ?>
             <div class="no-photos">
                 <h3>No photos yet</h3>
-                <p>Be the first to share your creation!</p>
                 <a href="camera.php" class="btn btn-primary">📷 Take Photo</a>
             </div>
         <?php else: ?>
