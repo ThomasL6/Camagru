@@ -123,6 +123,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $submitDiv->addChild($submit);
         $form->addChild($submitDiv);
 
+        // Forgot password link
+        $forgotDiv = new Elem('div', ['class' => 'form-group']);
+        $forgot = new Elem('a', ['href' => 'forgot_password.php', 'class' => 'link']);
+        $forgot->addChild('Forgot password?');
+        $forgotDiv->addChild($forgot);
+        $form->addChild($forgotDiv);
+
         // Create account link
         $createDiv = new Elem('div', ['class' => 'form-group']);
         $create = new Elem('a', ['href' => 'inscription.php', 'class' => 'link']);

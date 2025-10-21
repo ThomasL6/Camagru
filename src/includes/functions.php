@@ -34,4 +34,39 @@ function sendVerificationEmail($email, $username, $token) {
     
     return mail($email, $subject, $message, $headers);
 }
+
+function sendPasswordResetEmail($email, $username, $token) {
+    $subject = "Reset your Camagru password";
+    
+    // HTML message with the correct URL
+    $message = "
+    <html>
+    <head>
+        <title>Reset your password</title>
+    </head>
+    <body>
+        <h2>Hello $username,</h2>
+        <p>You requested to reset your password for your Camagru account.</p>
+        <p>To reset your password, please click on the link below:</p>
+        <p><a href='https://localhost:8443/reset_password.php?token=$token' style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>Reset my password</a></p>
+        <p>If the link doesn't work, copy and paste this URL into your browser:</p>
+        <p>https://localhost:8443/reset_password.php?token=$token</p>
+        <br>
+        <p><strong>This link will expire in 1 hour.</strong></p>
+        <p>If you did not request a password reset, you can safely ignore this email.</p>
+        <p>Best regards,<br>The Camagru Team</p>
+    </body>
+    </html>
+    ";
+    
+    // Headers for HTML
+    $headers = "MIME-Version: 1.0\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8\r\n";
+    $headers .= "From: Camagru <" . ($_ENV['SMTP_FROM'] ?? 'noreply@camagru.com') . ">\r\n";
+    $headers .= "Reply-To: " . ($_ENV['SMTP_FROM'] ?? 'noreply@camagru.com') . "\r\n";
+    
+    error_log("Sending password reset email to: $email");
+    
+    return mail($email, $subject, $message, $headers);
+}
 ?>
