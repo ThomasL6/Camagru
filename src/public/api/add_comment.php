@@ -45,6 +45,25 @@ if (!$db_path) {
 
 require_once $db_path;
 
+// Charger functions.php pour sendCommentNotificationEmail
+$functions_possible_paths = [
+    __DIR__ . '/../../includes/functions.php',
+    __DIR__ . '/../includes/functions.php',
+    __DIR__ . '/../../../includes/functions.php'
+];
+
+$functions_path = null;
+foreach ($functions_possible_paths as $path) {
+    if (file_exists($path)) {
+        $functions_path = $path;
+        break;
+    }
+}
+
+if ($functions_path) {
+    require_once $functions_path;
+}
+
 header('Content-Type: application/json');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -83,11 +102,17 @@ if (strlen($comment) > 500) {
 try {
     $pdo = Database::getInstance()->getConnection();
     
-    // Vérifier que la photo existe et est publique
-    $stmt = $pdo->prepare("SELECT id FROM images WHERE id = ? AND is_public = 1");
+    // Vérifier que la photo existe et est publique, et récupérer les infos du propriétaire
+    $stmt = $pdo->prepare("
+        SELECT i.id, i.user_id, u.username, u.email, u.notify_comments 
+        FROM images i
+        JOIN users u ON i.user_id = u.id
+        WHERE i.id = ? AND i.is_public = 1
+    ");
     $stmt->execute([$photoId]);
+    $photo = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if (!$stmt->fetch()) {
+    if (!$photo) {
         echo json_encode(['success' => false, 'message' => 'Photo not found or not public']);
         exit;
     }
@@ -99,6 +124,29 @@ try {
     ");
     
     $stmt->execute([$photoId, $userId, $comment]);
+    
+    // Envoyer une notification email au propriétaire de la photo
+    // Seulement si ce n'est pas le propriétaire qui commente sa propre photo
+    // et si le propriétaire a activé les notifications
+    if ($photo['user_id'] != $userId && isset($photo['notify_comments']) && $photo['notify_comments'] == 1) {
+        // Récupérer le nom d'utilisateur du commentateur
+        $stmt = $pdo->prepare("SELECT username FROM users WHERE id = ?");
+        $stmt->execute([$userId]);
+        $commenter = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($commenter && function_exists('sendCommentNotificationEmail')) {
+            $emailSent = sendCommentNotificationEmail(
+                $photo['email'], 
+                $photo['username'], 
+                $commenter['username'],
+                $photoId
+            );
+            
+            if (!$emailSent) {
+                error_log("Failed to send comment notification email to: " . $photo['email']);
+            }
+        }
+    }
     
     echo json_encode([
         'success' => true, 

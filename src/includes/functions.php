@@ -69,4 +69,38 @@ function sendPasswordResetEmail($email, $username, $token) {
     
     return mail($email, $subject, $message, $headers);
 }
+
+function sendCommentNotificationEmail($email, $username, $commenterUsername, $photoId) {
+    $subject = "New comment on your photo - Camagru";
+    
+    // HTML message with the correct URL
+    $message = "
+    <html>
+    <head>
+        <title>New comment on your photo</title>
+    </head>
+    <body>
+        <h2>Hello $username,</h2>
+        <p><strong>$commenterUsername</strong> has commented on your photo!</p>
+        <p>To view the comment and reply, please click on the link below:</p>
+        <p><a href='https://localhost:8443/gallery.php' style='background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;'>View photo</a></p>
+        <p>If the link doesn't work, copy and paste this URL into your browser:</p>
+        <p>https://localhost:8443/gallery.php</p>
+        <br>
+        <p>If you don't want to receive these notifications, you can disable them in your profile settings.</p>
+        <p>Best regards,<br>The Camagru Team</p>
+    </body>
+    </html>
+    ";
+    
+    // Headers for HTML
+    $headers = "MIME-Version: 1.0\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8\r\n";
+    $headers .= "From: Camagru <" . ($_ENV['SMTP_FROM'] ?? 'noreply@camagru.com') . ">\r\n";
+    $headers .= "Reply-To: " . ($_ENV['SMTP_FROM'] ?? 'noreply@camagru.com') . "\r\n";
+    
+    error_log("Sending comment notification email to: $email");
+    
+    return mail($email, $subject, $message, $headers);
+}
 ?>

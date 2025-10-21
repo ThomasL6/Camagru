@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     is_verified TINYINT(1) DEFAULT 0,
     reset_token VARCHAR(64),
     reset_token_expiry TIMESTAMP NULL,
+    notify_comments TINYINT(1) DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
