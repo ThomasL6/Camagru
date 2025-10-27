@@ -22,7 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Process password reset request
     if (empty($errors)) {
         try {
-            $pdo = getDatabase();
+            // Initialize database connection (getDatabase() sets the global $pdo)
+            getDatabase();
+            global $pdo;
 
             // Check if user exists
             $stmt = $pdo->prepare("SELECT id, username, email FROM users WHERE email = ?");

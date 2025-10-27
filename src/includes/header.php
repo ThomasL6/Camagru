@@ -1,12 +1,17 @@
 <?php
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
+// Déterminer si l'utilisateur est connecté
+$isLoggedIn = isset($_SESSION['user_id']);
+$username = $_SESSION['username'] ?? 'Guest';
+$current_page = basename($_SERVER['PHP_SELF'], '.php');
+
+// Pages publiques accessibles sans connexion
+$publicPages = ['feed', 'index', 'inscription', 'verify', 'forgot_password', 'reset_password'];
+
+// Si pas connecté ET pas sur une page publique, rediriger vers index
+if (!$isLoggedIn && !in_array($current_page, $publicPages)) {
     header('Location: index.php');
     exit;
 }
-
-$username = $_SESSION['username'] ?? 'User';
-$current_page = basename($_SERVER['PHP_SELF'], '.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,6 +27,7 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
     <?php endif; ?>
 </head>
 <body>
+    <?php if ($isLoggedIn): ?>
     <header class="main-header">
         <div class="header-container">
             <div class="logo">
@@ -43,12 +49,26 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                     <span class="username">👋 <?php echo htmlspecialchars($username); ?></span>
                 </div>
                 <div class="logout-menu">
-                    <a href="?logout=1" class="logout-btn" onclick="return confirm('Are you sure you want to log out?')">
+                    <a href="logout.php" class="logout-btn" onclick="return confirm('Are you sure you want to log out?')">
                         🚪 Logout
                     </a>
                 </div>
             </div>
         </div>
     </header>
+    <?php else: ?>
+    <!-- Header simple pour visiteurs non connectés -->
+    <header class="main-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px 0;">
+        <div class="header-container" style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            <div class="logo">
+                <h1 style="margin: 0;"><a href="feed.php" style="color: white; text-decoration: none;">📸 Camagru</a></h1>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <a href="index.php" class="btn" style="padding: 8px 20px; background: white; color: #667eea; text-decoration: none; border-radius: 5px;">🔐 Login</a>
+                <a href="inscription.php" class="btn" style="padding: 8px 20px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px;">✨ Sign Up</a>
+            </div>
+        </div>
+    </header>
+    <?php endif; ?>
     
     <main class="main-content">

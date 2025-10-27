@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../classes/Database.php';
+require_once __DIR__ . '/../classes/PasswordCheck.php'; // ✅ Correction du chemin
 
 $page_title = "My Profile - Camagru";
 $page_css = "profile";
@@ -11,9 +12,24 @@ $errors = [];
 // Get user information
 try {
     $pdo = getDatabase();
-    $stmt = $pdo->prepare("SELECT username, email, created_at FROM users WHERE id = ?");
+    $stmt = $pdo->prepare("SELECT username, email, created_at, notify_comments FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    // Get number of published photos
+    $stmt = $pdo->prepare("SELECT COUNT(*) as photo_count FROM images WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $photo_count = $stmt->fetch(PDO::FETCH_ASSOC)['photo_count'];
+    
+    // Get total number of likes received on all user's photos
+    $stmt = $pdo->prepare("
+        SELECT COUNT(l.id) as total_likes 
+        FROM likes l 
+        INNER JOIN images i ON l.image_id = i.id 
+        WHERE i.user_id = ?
+    ");
+    $stmt->execute([$user_id]);
+    $total_likes = $stmt->fetch(PDO::FETCH_ASSOC)['total_likes'];
 } catch (PDOException $e) {
     $errors[] = "Error loading profile: " . $e->getMessage();
 }
@@ -37,9 +53,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = "Email address is not valid";
     }
     
-    // Password validation (optional)
-    if (!empty($new_password) && strlen($new_password) < 6) {
-        $errors[] = "Password must contain at least 6 characters";
+    if (!empty($new_password)) {
+        $passwordValidation = PasswordCheck::isValid($new_password);
+        if (!$passwordValidation['valid']) {
+            $errors = array_merge($errors, $passwordValidation['errors']);
+        }
     }
     
     if (empty($errors)) {
@@ -61,6 +79,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             if (empty($errors)) {
+                
+                if (empty($errors)) {
                 // Prepare update query
                 if (!empty($new_password)) {
                     // Update with new password
@@ -81,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     $errors[] = "Error during update";
                 }
+            }
             }
         } catch (PDOException $e) {
             $errors[] = "Database error: " . $e->getMessage();
@@ -118,10 +139,28 @@ include __DIR__ . '/../includes/header.php';
                 <p><strong>Email:</strong> <?php echo htmlspecialchars($user['email'] ?? 'Not defined'); ?></p>
                 <p><strong>Member since:</strong> <?php echo isset($user['created_at']) ? date('m/d/Y', strtotime($user['created_at'])) : 'Unknown date'; ?></p>
             </div>
+            <div class="info-card">
+                <div class="notification-option">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input 
+                        type="checkbox" 
+                        id="notify_comments" 
+                            <?php echo (isset($user['notify_comments']) && $user['notify_comments'] == 1) ? 'checked' : ''; ?>
+                            style="margin-right: 10px; width: 20px; height: 20px; cursor: pointer;"
+                            onchange="updateNotificationPreference(this.checked)"
+                        >
+                        <span>Receive email when someone comments on my photos</span>
+                    </label>
+                    <small class="form-hint" style="margin-left: 30px; display: block; margin-top: 5px;">
+                        You will receive an email each time someone comments on one of your public photos
+                    </small>
+                    <div id="notification-status" style="margin-left: 30px; margin-top: 10px; font-size: 0.9em;"></div>
+                </div>
+            </div>
         </section>
-        
-        <section class="profile-edit">
-            <h3>Edit Profile</h3>
+            
+            <section class="profile-edit">
+                <h3>Edit Profile</h3>
             <form method="POST" class="profile-form">
                 <div class="form-group">
                     <label for="username">Username:</label>
@@ -154,12 +193,17 @@ include __DIR__ . '/../includes/header.php';
                         id="password" 
                         name="password" 
                         class="input-field"
-                        placeholder="New password"
+                        placeholder="Leave blank to keep current password"
                     >
+                    <!-- ✅ Ajout des exigences -->
+                    <small class="form-hint">
+                        If changing: 8+ chars, uppercase, lowercase, number, special character
+                    </small>
                 </div>
+
                 
                 <div class="form-group">
-                    <button type="submit" class="btn">Save</button>
+                    <button type="submit" class="btn">Save Changes</button>
                 </div>
             </form>
         </section>
@@ -168,16 +212,56 @@ include __DIR__ . '/../includes/header.php';
             <h3>Statistics</h3>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-number">0</div>
+                    <div class="stat-number"><?php echo htmlspecialchars($photo_count ?? 0); ?></div>
                     <div class="stat-label">Photos published</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number">0</div>
+                    <div class="stat-number"><?php echo htmlspecialchars($total_likes ?? 0); ?></div>
                     <div class="stat-label">Likes received</div>
                 </div>
             </div>
         </section>
     </div>
 </div>
+
+<script>
+async function updateNotificationPreference(isEnabled) {
+    const statusDiv = document.getElementById('notification-status');
+    const checkbox = document.getElementById('notify_comments');
+    
+    // Afficher un message de chargement
+    statusDiv.innerHTML = '<span style="color: #666;">⏳ Saving...</span>';
+    
+    try {
+        const response = await fetch('api/update_notifications.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                notify_comments: isEnabled ? 1 : 0
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            statusDiv.innerHTML = '<span style="color: #4CAF50;">✅ Saved successfully!</span>';
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 3000);
+        } else {
+            statusDiv.innerHTML = '<span style="color: #f44336;">❌ Error: ' + (data.message || 'Failed to save') + '</span>';
+            // Revert checkbox state on error
+            checkbox.checked = !isEnabled;
+        }
+    } catch (error) {
+        console.error('Error updating notification preference:', error);
+        statusDiv.innerHTML = '<span style="color: #f44336;">❌ Network error</span>';
+        // Revert checkbox state on error
+        checkbox.checked = !isEnabled;
+    }
+}
+</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

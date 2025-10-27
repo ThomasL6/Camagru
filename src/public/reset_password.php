@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../classes/Elem.php';
 require_once __DIR__ . '/../classes/Database.php';
+require_once __DIR__ . '/../classes/PasswordCheck.php';
 
 session_start();
 
@@ -41,8 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
     // Validation
     if (empty($password)) {
         $errors[] = "Password is required";
-    } elseif (strlen($password) < 8) {
-        $errors[] = "Password must contain at least 8 characters";
+    } else {
+        $passwordValidation = PasswordCheck::isValid($password);
+        if (!$passwordValidation['valid']) {
+            $errors = array_merge($errors, $passwordValidation['errors']);
+        }
     }
 
     if ($password !== $confirm_password) {
@@ -124,6 +128,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
                 'class' => 'input-field',
                 'minlength' => '8'
             ]);
+            $passRequirements = new Elem('small', ['class' => 'form-text']);
+            $passRequirements->addChild('Password must be at least 8 characters long and include uppercase, lowercase, digit, and special character.');
+            $pwdDiv->addChild($passRequirements);
             $pwdDiv->addChild($pwdLabel);
             $pwdDiv->addChild($pwdInput);
             $form->addChild($pwdDiv);
@@ -163,5 +170,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $validToken) {
         echo $backDiv->render();
         ?>
     </div>
+    <script>
+        document.getElementById('password')?.addEventListener('input', function(e) {
+            const password = e.target.value;
+            const requirements = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[^a-zA-Z0-9]/.test(password)
+            };
+            
+            const allValid = Object.values(requirements).every(v => v);
+            e.target.style.borderColor = allValid ? 'green' : '#ddd';
+        });
+    </script>
 </body>
 </html>

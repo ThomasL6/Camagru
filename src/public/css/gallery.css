@@ -360,6 +360,41 @@
     background: rgba(0, 0, 0, 0.8);
 }
 
+/* ========== INFINITE SCROLL ========== */
+#loading-spinner {
+    text-align: center;
+    padding: 2rem;
+}
+
+.spinner {
+    display: inline-block;
+    font-size: 1.2rem;
+    color: #007BFF;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
+}
+
+#no-more-photos {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+    font-size: 1rem;
+}
+
+#no-more-photos p {
+    margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .gallery-grid {

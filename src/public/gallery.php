@@ -2,19 +2,73 @@
 require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../classes/Database.php';
 
+if (isset($_GET['ajax']) && $_GET['ajax'] === 'load_more') {
+    header('Content-Type: application/json');
+    
+    try {
+        $offset = isset($_GET['offset']) ? (int)$_GET['offset'] : 0;
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 20;
+        
+        if ($limit > 50) {
+            $limit = 50;
+        }
+        
+        $pdo = Database::getInstance()->getConnection();
+        $user_id = $_SESSION['user_id'];
+        
+        $stmt = $pdo->prepare("
+            SELECT id, image_path, is_public, created_at 
+            FROM images 
+            WHERE user_id = :user_id 
+            ORDER BY created_at DESC
+            LIMIT :limit OFFSET :offset
+        ");
+        $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM images WHERE user_id = :user_id");
+        $stmtCount->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+        $stmtCount->execute();
+        $totalPhotos = $stmtCount->fetchColumn();
+        
+        $hasMore = ($offset + $limit) < $totalPhotos;
+        
+        echo json_encode([
+            'success' => true,
+            'photos' => $photos,
+            'hasMore' => $hasMore,
+            'total' => $totalPhotos
+        ]);
+        
+    } catch (Exception $e) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'Failed to load photos: ' . $e->getMessage()
+        ]);
+    }
+    exit;
+}
+
 $page_title = "Gallery - Camagru";
 $page_css = "gallery";
 
 try {
     $pdo = Database::getInstance()->getConnection();
     
+    $initialLimit = 20;
     $stmt = $pdo->prepare("
         SELECT id, image_path, is_public, created_at 
         FROM images 
-        WHERE user_id = ? 
+        WHERE user_id = :user_id 
         ORDER BY created_at DESC
+        LIMIT :limit
     ");
-    $stmt->execute([$_SESSION['user_id']]);
+    $stmt->bindValue(':user_id', $_SESSION['user_id'], PDO::PARAM_INT);
+    $stmt->bindValue(':limit', $initialLimit, PDO::PARAM_INT);
+    $stmt->execute();
     $photos = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
 } catch (Exception $e) {
@@ -80,6 +134,14 @@ include __DIR__ . '/../includes/header.php';
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>
+    </div>
+    
+    <div id="loading-spinner" style="display: none; text-align: center; padding: 20px;">
+        <div class="spinner">⏳ Loading more photos...</div>
+    </div>
+    
+    <div id="no-more-photos" style="display: none; text-align: center; padding: 20px; color: #666;">
+        <p>📷 You've reached the end of your gallery!</p>
     </div>
 </div>
 

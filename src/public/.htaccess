@@ -1,0 +1,15 @@
+# Redirection automatique de la racine vers feed.php
+DirectoryIndex feed.php index.php
+
+# Activer RewriteEngine
+RewriteEngine On
+
+# Si on accède à la racine du dossier public
+RewriteCond %{REQUEST_URI} ^/+$
+RewriteRule ^(.*)$ feed.php [L]
+
+# Protection des fichiers sensibles
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>

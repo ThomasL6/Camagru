@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../classes/Elem.php';
 require_once __DIR__ . '/../classes/Database.php';
+require_once __DIR__ . '/../classes/PasswordCheck.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 session_start();
@@ -30,8 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     if (empty($password)) {
         $errors[] = "Password is required";
-    } elseif (strlen($password) < 8) {
-        $errors[] = "Password must contain at least 8 characters";
+    } else {
+        $passwordValidation = PasswordCheck::isValid($password);
+        if (!$passwordValidation['valid']) {
+            $errors = array_merge($errors, $passwordValidation['errors']);
+        }
     }
     
     if ($password !== $confirm_password) {
@@ -88,7 +92,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Create an Account</h1>
         
         <?php
-        // Afficher les erreurs
         if (!empty($errors)) {
             $errorDiv = new Elem('div', ['class' => 'error-messages']);
             foreach ($errors as $error) {
@@ -99,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo $errorDiv->render();
         }
         
-        // Afficher le message de succès
         if ($success) {
             $successDiv = new Elem('div', ['class' => 'success-message']);
             $successP = new Elem('p', ['class' => 'success']);
@@ -108,7 +110,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo $successDiv->render();
         }
         
-        // Afficher le formulaire seulement si pas de succès
         if (!$success) {
             $form = new Elem('form', [
                 'method' => 'POST',
@@ -159,8 +160,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'class' => 'input-field',
                 'required' => 'required'
             ]);
+            
+            $passRequirements = new Elem('small', ['class' => 'form-hint']);
+            $passRequirements->addChild('Must contain: at least 8 characters, 1 uppercase letter, 1 lowercase letter, 1 number, 1 special character');
             $passDiv->addChild($passLabel);
             $passDiv->addChild($passInput);
+            $passDiv->addChild($passRequirements);
             $form->addChild($passDiv);
 
             // Confirm Password field
@@ -186,9 +191,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $submitBtn->addChild('Register');
             $form->addChild($submitBtn);
 
+            // Link to login
+            $loginDiv = new Elem('div', ['class' => 'form-group', 'style' => 'text-align: center;']);
+            $loginLink = new Elem('a', ['href' => 'index.php', 'class' => 'link']);
+            $loginLink->addChild('Already have an account? Login');
+            $loginDiv->addChild($loginLink);
+            $form->addChild($loginDiv);
+
+            // Link back to public gallery
+            $feedDiv = new Elem('div', ['class' => 'form-group', 'style' => 'text-align: center;']);
+            $feedLink = new Elem('a', ['href' => 'feed.php', 'class' => 'link']);
+            $feedLink->addChild('← Back to public gallery');
+            $feedDiv->addChild($feedLink);
+            $form->addChild($feedDiv);
+
             echo $form->render();
         }
         ?>
     </div>
+    
+    <script>
+        document.getElementById('password')?.addEventListener('input', function(e) {
+            const password = e.target.value;
+            const requirements = {
+                length: password.length >= 8,
+                uppercase: /[A-Z]/.test(password),
+                lowercase: /[a-z]/.test(password),
+                number: /[0-9]/.test(password),
+                special: /[^a-zA-Z0-9]/.test(password)
+            };
+            
+            const allValid = Object.values(requirements).every(v => v);
+            e.target.style.borderColor = allValid ? 'green' : '#ddd';
+        });
+    </script>
 </body>
 </html>

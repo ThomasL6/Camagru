@@ -21,7 +21,7 @@ if($_SERVER['REQUEST_METHOD'] !== 'POST'){
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true); // Supprimé le _
+$input = json_decode(file_get_contents('php://input'), true);
 
 if(!isset($input['image'])) {
     echo json_encode(['success' => false, 'error' => 'No image data provided']);
@@ -29,6 +29,7 @@ if(!isset($input['image'])) {
 }
 
 try {
+    // Decode base64 image
     $imageData = $input['image'];
     $imageData = str_replace('data:image/png;base64,', '', $imageData);
     $imageData = base64_decode($imageData);
@@ -37,6 +38,82 @@ try {
         throw new Exception("Invalid image data");
     }
 
+    // Create GD image resource from decoded data
+    $img = imagecreatefromstring($imageData);
+    if($img === false) {
+        throw new Exception("Failed to create image from data");
+    }
+
+    // Get image dimensions
+    $width = imagesx($img);
+    $height = imagesy($img);
+
+    //Apply CSS filter server-side with GD
+    $filter = isset($input['filter']) ? $input['filter'] : 'none';
+    
+    if ($filter === 'grayscale(1)') {
+        imagefilter($img, IMG_FILTER_GRAYSCALE);
+    } elseif ($filter === 'sepia(1)') {
+        // Sepia effect (grayscale + colorize)
+        imagefilter($img, IMG_FILTER_GRAYSCALE);
+        imagefilter($img, IMG_FILTER_COLORIZE, 100, 50, 0);
+    } elseif ($filter === 'invert(1)') {
+        imagefilter($img, IMG_FILTER_NEGATE);
+    }
+
+    //Apply stickers server-side
+    if (isset($input['stickers']) && is_array($input['stickers'])) {
+        foreach ($input['stickers'] as $stickerData) {
+            if (!isset($stickerData['path']) || !isset($stickerData['x']) || !isset($stickerData['y']) || !isset($stickerData['size'])) {
+                continue;
+            }
+
+            // Extract just the filename from the path (e.g., "stickers/CatMoney.png" -> "CatMoney.png")
+            $pathParts = explode('/', $stickerData['path']);
+            $stickerFilename = end($pathParts);
+            
+            // Security: validate sticker path (must be in stickers directory)
+            $stickerPath = __DIR__ . '/../stickers/' . $stickerFilename;
+            if (!file_exists($stickerPath)) {
+                error_log("Sticker not found: " . $stickerPath);
+                continue;
+            }
+
+            // Load sticker image
+            $stickerImg = @imagecreatefrompng($stickerPath);
+            if ($stickerImg === false) {
+                error_log("Failed to load sticker: " . $stickerPath);
+                continue;
+            }
+
+            // Calculate position (center the sticker at given coordinates)
+            $stickerSize = (int)$stickerData['size'];
+            $x = (int)$stickerData['x'] - ($stickerSize / 2);
+            $y = (int)$stickerData['y'] - ($stickerSize / 2);
+
+            // Resize sticker to desired size
+            $resizedSticker = imagecreatetruecolor($stickerSize, $stickerSize);
+            imagealphablending($resizedSticker, false);
+            imagesavealpha($resizedSticker, true);
+            
+            imagecopyresampled(
+                $resizedSticker, 
+                $stickerImg, 
+                0, 0, 0, 0,
+                $stickerSize, $stickerSize,
+                imagesx($stickerImg), imagesy($stickerImg)
+            );
+
+            // Merge sticker onto main image with alpha blending
+            imagealphablending($img, true);
+            imagecopy($img, $resizedSticker, $x, $y, 0, 0, $stickerSize, $stickerSize);
+
+            imagedestroy($stickerImg);
+            imagedestroy($resizedSticker);
+        }
+    }
+
+    //  Save processed image
     $fileName = 'photo_' . $_SESSION['user_id'] . '_' . time() . '_' . uniqid() . '.png';
     $uploadDir = __DIR__ . '/../uploads/images/';
 
@@ -47,11 +124,17 @@ try {
     }
 
     $filePath = $uploadDir . $fileName;
-    if(file_put_contents($filePath, $imageData) === false) {
-        throw new Exception("Failed to save image file");
+    
+    // Save as PNG with alpha channel support
+    imagesavealpha($img, true);
+    if(!imagepng($img, $filePath)) {
+        throw new Exception("Failed to save processed image");
     }
 
-    // Get visibility setting (default to private if not specified)
+    // Free memory
+    imagedestroy($img);
+
+    //Save to database
     $isPublic = isset($input['is_public']) ? (bool)$input['is_public'] : false;
 
     $pdo = getDatabase();

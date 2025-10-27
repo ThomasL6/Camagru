@@ -4,6 +4,12 @@ require_once __DIR__ . '/../classes/Database.php';
 
 session_start();
 
+// Si déjà connecté, rediriger vers feed
+if (isset($_SESSION['user_id'])) {
+    header('Location: feed.php');
+    exit;
+}
+
 $errors = [];
 $success = '';
 
@@ -67,7 +73,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <h1>Camagru</h1>
         
         <?php
-        // Affichage des erreurs
         if (!empty($errors)) {
             echo '<div class="error-messages">';
             foreach ($errors as $error) {
@@ -79,7 +84,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo '<div class="success-message"><p>' . htmlspecialchars($success) . '</p></div>';
         }
 
-        // Formulaire principal
         $form = new Elem('form', [
             'action' => '',
             'method' => 'post',
@@ -136,6 +140,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $create->addChild('Create an account');
         $createDiv->addChild($create);
         $form->addChild($createDiv);
+
+        // Back to public feed link
+        $feedDiv = new Elem('div', ['class' => 'form-group']);
+        $feedLink = new Elem('a', ['href' => 'feed.php', 'class' => 'link']);
+        $feedLink->addChild('← Back to public gallery');
+        $feedDiv->addChild($feedLink);
+        $form->addChild($feedDiv);
 
         // Affichage du formulaire
         echo $form->render();

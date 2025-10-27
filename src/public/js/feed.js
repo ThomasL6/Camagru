@@ -1,4 +1,138 @@
 document.addEventListener('DOMContentLoaded', function() {
+
+    let currentOffset = 20;
+    let isLoading = false;
+    let hasMorePhotos = true;
+    
+    const feedGrid = document.querySelector('.feed-grid');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const noMorePhotos = document.getElementById('no-more-photos');
+    
+    function isNearBottom() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        
+        return (scrollTop + windowHeight) >= (documentHeight - 500);
+    }
+    
+    function loadMorePhotos() {
+        if (isLoading || !hasMorePhotos) return;
+        
+        isLoading = true;
+        loadingSpinner.style.display = 'block';
+        
+        fetch(`feed.php?ajax=load_more&offset=${currentOffset}&limit=20`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.photos.length > 0) {
+                    data.photos.forEach(photo => {
+                        const photoCard = createPhotoCard(photo);
+                        feedGrid.appendChild(photoCard);
+                    });
+                    
+                    currentOffset += data.photos.length;
+                    hasMorePhotos = data.hasMore;
+                    
+                    checkUserLikesForNewPhotos(data.photos);
+                    
+                    if (!data.hasMore) {
+                        noMorePhotos.style.display = 'block';
+                    }
+                } else {
+                    hasMorePhotos = false;
+                    noMorePhotos.style.display = 'block';
+                }
+                
+                isLoading = false;
+                loadingSpinner.style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error loading more photos:', error);
+                isLoading = false;
+                loadingSpinner.style.display = 'none';
+            });
+    }
+    
+    function createPhotoCard(photo) {
+        const photoCard = document.createElement('div');
+        photoCard.className = 'photo-card feed-card';
+        photoCard.setAttribute('data-photo-id', photo.id);
+        
+        photoCard.innerHTML = `
+            <div class="photo-header">
+                <div class="author-info">
+                    <span class="author-name">📸 ${escapeHtml(photo.username)}</span>
+                    <span class="photo-date">${photo.formatted_date}</span>
+                </div>
+            </div>
+            
+            <div class="photo-container">
+                <img src="uploads/images/${escapeHtml(photo.image_path)}" 
+                    alt="Photo by ${escapeHtml(photo.username)}"
+                    loading="lazy"
+                    onclick="openLightbox(this.src, '${escapeHtml(photo.username)}', ${photo.id})">
+            </div>
+            
+            <div class="photo-footer">
+                <div class="photo-stats">
+                    <div class="likes-section">
+                        <button class="like-btn" onclick="toggleLike(${photo.id}, event)" 
+                                data-photo-id="${photo.id}">
+                            ❤️ <span class="likes-count" id="likes-${photo.id}">${photo.likes_count}</span>
+                        </button>
+                    </div>
+                    <div class="comment-section">
+                        <input type="text" placeholder="Add a comment..." class="comment-input" 
+                            data-photo-id="${photo.id}"
+                            onkeypress="handleCommentSubmit(event, ${photo.id})">
+                    </div>
+                    <span class="time-ago">
+                        ${photo.timeAgo}
+                    </span>
+                </div>
+            </div>
+        `;
+        
+        return photoCard;
+    }
+    
+    function checkUserLikesForNewPhotos(photos) {
+        const photoIds = photos.map(photo => photo.id);
+        
+        fetch('api/get_user_likes.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                photo_ids: photoIds
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                data.liked_photos.forEach(photoId => {
+                    const likeBtn = document.querySelector(`[data-photo-id="${photoId}"] .like-btn`);
+                    if (likeBtn) {
+                        likeBtn.classList.add('liked');
+                        const currentContent = likeBtn.innerHTML;
+                        likeBtn.innerHTML = currentContent.replace('❤️', '💖');
+                    }
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error checking user likes for new photos:', error);
+        });
+    }
+    
+    window.addEventListener('scroll', function() {
+        if (isNearBottom()) {
+            loadMorePhotos();
+        }
+    });
+    
     
     // Function to show temporary messages (définie en premier)
     window.showTemporaryMessage = function(message, type = 'info') {
@@ -105,7 +239,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Désactiver l'input pendant l'envoi
             commentInput.disabled = true;
             
             console.log('Sending comment to API...');
@@ -130,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
-                return response.text(); // Changer en text() d'abord pour voir la réponse brute
+                return response.text();
             })
             .then(text => {
                 console.log('Raw response:', text);
@@ -138,10 +271,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     const data = JSON.parse(text);
                     console.log('Parsed response data:', data);
                     if (data.success) {
-                        // Vider l'input
                         commentInput.value = '';
                         
-                        // Afficher une confirmation
                         window.showTemporaryMessage('Commentaire ajouté !', 'success');
                     } else {
                         console.error('Error adding comment:', data.message);
@@ -158,7 +289,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Erreur de connexion: ' + error.message);
             })
             .finally(() => {
-                // Réactiver l'input
                 commentInput.disabled = false;
                 commentInput.focus();
             });
@@ -263,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Error loading comments:', error);
                 document.getElementById(`comments-list-${photoId}`).innerHTML = 
-                    '<div class="no-comments">Erreur lors du chargement des commentaires</div>';
+                    '<div class="no-comments">Connectez vous pour voir les commentaires</div>';
             });
     }
 

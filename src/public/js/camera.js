@@ -118,7 +118,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 photo.src = editCanvas.toDataURL('image/png');
             }
             stickerModal.style.display = 'none';
-            placedStickers = [];
             stickerForPlacement = null;
         }
     }
@@ -126,7 +125,6 @@ document.addEventListener("DOMContentLoaded", function () {
     window.onclick = function(event) {
         if (event.target == stickerModal) {
             stickerModal.style.display = 'none';
-            placedStickers = [];
             stickerForPlacement = null;
         }
     }
@@ -254,11 +252,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
             uploadedImage = null;
 
-            context.filter = selectedFilter;
+            // Draw RAW image without filter (filter will be applied server-side)
+            context.filter = 'none';
             context.drawImage(video, 0, 0, width, height);
 
             const data = canvas.toDataURL('image/png');
             photo.setAttribute('src', data);
+            // Apply visual filter to preview only (CSS)
+            photo.style.filter = selectedFilter;
             
             const visibilityOptions = document.getElementById('visibility-options');
             const saveButton = document.getElementById('save-button');
@@ -287,12 +288,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     
                     const context = canvas.getContext('2d');
                     
-                    context.filter = selectedFilter;
+                    // Draw RAW image without filter (filter will be applied server-side)
+                    context.filter = 'none';
                     
                     context.drawImage(tempImg, 0, 0, canvas.width, canvas.height);
                     
-                    const filteredData = canvas.toDataURL('image/png');
-                    photo.setAttribute('src', filteredData);
+                    const rawData = canvas.toDataURL('image/png');
+                    photo.setAttribute('src', rawData);
+                    // Apply visual filter to preview only (CSS)
+                    photo.style.filter = selectedFilter;
 
                     const visibilityOptions = document.getElementById('visibility-options');
                     const saveButton = document.getElementById('save-button');
@@ -307,8 +311,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }, false);
 
     function savePhoto() {
-        const imageData = photo.src;
-        if (!imageData || imageData === 'data:,') {
+        // Get the RAW image data from canvas (without filters/stickers applied in display)
+        const context = canvas.getContext('2d');
+        
+        if (!canvas.width || !canvas.height) {
             alert('Please take a photo first!');
             return;
         }
@@ -320,13 +326,34 @@ document.addEventListener("DOMContentLoaded", function () {
         savebutton.disabled = true;
         savebutton.textContent = '💾 Saving...';
 
+        // Prepare stickers data for server-side processing
+        const stickersData = placedStickers.map(sticker => {
+            // Extract just the filename from the full URL
+            // e.g., "https://localhost:8443/stickers/CatMoney.png" -> "stickers/CatMoney.png"
+            const fullPath = sticker.img.src;
+            const pathMatch = fullPath.match(/stickers\/[^/]+$/);
+            const stickerPath = pathMatch ? pathMatch[0] : fullPath;
+            
+            return {
+                path: stickerPath,
+                x: sticker.x,
+                y: sticker.y,
+                size: sticker.size
+            };
+        });
+
+        console.log('Saving with stickers:', stickersData); // Debug log
+
+        // Send RAW image + processing parameters to server
         fetch('api/uploadimage.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                image: imageData,
+                image: canvas.toDataURL('image/png'),
+                filter: selectedFilter,
+                stickers: stickersData,
                 is_public: isPublic
             })
         })
@@ -335,6 +362,8 @@ document.addEventListener("DOMContentLoaded", function () {
             if (data.success) {
                 const visibility = isPublic ? 'public' : 'private';
                 alert(`📸 Photo saved successfully as ${visibility}!`);
+                // Clear stickers after successful save
+                placedStickers = [];
                 clearphoto();
             } else {
                 alert('❌ Error: ' + (data.error || 'Unknown error'));
